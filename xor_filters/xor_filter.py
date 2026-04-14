@@ -5,13 +5,12 @@ native code. This module provides:
 1) a thin wrapper path for optional external backends, and
 2) a deterministic Python fallback backend for framework integration/testing.
 
-The fallback is *not* a true XOR filter data structure; it approximates the
-AMQ behavior with fixed-size fingerprints to keep interface compatibility.
+The fallback is *not* a true XOR filter data structure; it uses a static Bloom
+backend to provide stable AMQ behavior while preserving interface compatibility.
 """
 
 from __future__ import annotations
 
-import hashlib
 import importlib
 import json
 import time
@@ -20,6 +19,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from benchmarking.interfaces import AMQFilter, FilterBuildMetadata
+from bloom_filters.bloom_filter import BloomFilter
 
 
 @dataclass(slots=True)
@@ -28,48 +28,95 @@ class _NativeBackendHandle:
     class_name: str
 
 
-class _FingerprintSetFallback:
-    """Static fingerprint-set fallback backend.
+class _StaticBloomFallback:
+    """Static Bloom-based fallback backend.
 
-    This is not a true XOR filter; it serves as a deterministic placeholder
-    backend until a native XOR filter package is selected.
+    This backend is deterministic and AMQ-compatible, but it is not a true XOR
+    filter construction.
     """
 
-    def __init__(self, fingerprint_bits: int) -> None:
+    def __init__(self, fingerprint_bits: int, *, hash_seed: int = 0) -> None:
         if fingerprint_bits <= 1:
             raise ValueError("fingerprint_bits must be > 1")
         self.fingerprint_bits = fingerprint_bits
-        self._mask = (1 << fingerprint_bits) - 1
-        self._fps: set[int] = set()
-
-    def _fp(self, key: str) -> int:
-        raw = int.from_bytes(
-            hashlib.blake2b(key.encode("utf-8"), digest_size=8).digest(), "little"
-        )
-        out = raw & self._mask
-        return out if out != 0 else 1
+        self.hash_seed = hash_seed
+        self.target_fpr = min(0.25, max(1e-6, 2 ** (-fingerprint_bits)))
+        self._bloom: BloomFilter | None = None
+        self._inserted_count = 0
 
     def build(self, keys: Sequence[str]) -> None:
-        self._fps = {self._fp(key) for key in keys}
+        n = max(1, len(keys))
+        bloom = BloomFilter(
+            expected_items=n,
+            false_positive_rate=self.target_fpr,
+            hash_seed=self.hash_seed,
+        )
+        bloom.build(keys)
+        self._bloom = bloom
+        self._inserted_count = len(keys)
 
     def contains(self, key: str) -> bool:
-        return self._fp(key) in self._fps
+        if self._bloom is None:
+            return False
+        return self._bloom.contains(key)
+
+    def memory_usage_bytes(self) -> int:
+        if self._bloom is None:
+            return 0
+        return self._bloom.memory_usage_bytes()
 
     def to_payload(self) -> dict[str, Any]:
+        if self._bloom is None:
+            return {
+                "fingerprint_bits": self.fingerprint_bits,
+                "hash_seed": self.hash_seed,
+                "target_fpr": self.target_fpr,
+                "bloom": None,
+            }
+
+        bloom = self._bloom
         return {
             "fingerprint_bits": self.fingerprint_bits,
-            "fingerprints": sorted(self._fps),
+            "hash_seed": self.hash_seed,
+            "target_fpr": self.target_fpr,
+            "bloom": {
+                "expected_items": bloom.expected_items,
+                "false_positive_rate": bloom.false_positive_rate,
+                "hash_seed": bloom.hash_seed,
+                "num_bits": bloom.num_bits,
+                "num_hashes": bloom.num_hashes,
+                "inserted_count": bloom._inserted_count,
+                "build_time_seconds": bloom._build_time_seconds,
+                "bitarray_hex": bytes(bloom._bytes).hex(),
+            },
         }
 
     @classmethod
-    def from_payload(cls, payload: dict[str, Any]) -> _FingerprintSetFallback:
-        inst = cls(fingerprint_bits=int(payload["fingerprint_bits"]))
-        inst._fps = set(map(int, payload["fingerprints"]))
-        return inst
+    def from_payload(cls, payload: dict[str, Any]) -> _StaticBloomFallback:
+        inst = cls(
+            fingerprint_bits=int(payload["fingerprint_bits"]),
+            hash_seed=int(payload.get("hash_seed", 0)),
+        )
+        inst.target_fpr = float(payload.get("target_fpr", inst.target_fpr))
 
-    @property
-    def size(self) -> int:
-        return len(self._fps)
+        bloom_payload = payload.get("bloom")
+        if isinstance(bloom_payload, dict):
+            bloom = BloomFilter(
+                expected_items=int(bloom_payload["expected_items"]),
+                false_positive_rate=float(bloom_payload["false_positive_rate"]),
+                hash_seed=int(bloom_payload.get("hash_seed", 0)),
+            )
+            bloom.num_bits = int(bloom_payload["num_bits"])
+            bloom.num_hashes = int(bloom_payload["num_hashes"])
+            bloom._bytes = bytearray(bytes.fromhex(bloom_payload["bitarray_hex"]))
+            bloom._inserted_count = int(bloom_payload.get("inserted_count", 0))
+            bloom._build_time_seconds = bloom_payload.get("build_time_seconds")
+            bloom._built = True
+
+            inst._bloom = bloom
+            inst._inserted_count = bloom._inserted_count
+
+        return inst
 
 
 class XorFilter(AMQFilter):
@@ -89,7 +136,10 @@ class XorFilter(AMQFilter):
         self._backend_name = "uninitialized"
         self._native_handle: _NativeBackendHandle | None = None
         self._native_obj: Any | None = None
-        self._fallback = _FingerprintSetFallback(fingerprint_bits=fingerprint_bits)
+        self._fallback = _StaticBloomFallback(
+            fingerprint_bits=fingerprint_bits,
+            hash_seed=0,
+        )
 
         self._inserted_count = 0
         self._build_time_seconds: float | None = None
@@ -164,7 +214,7 @@ class XorFilter(AMQFilter):
             self._fallback.build(keys)
             self._native_handle = None
             self._native_obj = None
-            self._backend_name = "fallback:fingerprint_set"
+            self._backend_name = "fallback:static_bloom"
 
         self._inserted_count = len(keys)
         self._build_time_seconds = time.perf_counter() - start
@@ -191,7 +241,7 @@ class XorFilter(AMQFilter):
         """
         if self._native_obj is not None:
             return int(self._inserted_count * self.fingerprint_bits / 8)
-        return int(max(1, self._fallback.size) * self.fingerprint_bits / 8)
+        return self._fallback.memory_usage_bytes()
 
     def save(self, path: str | Path) -> None:
         """Serialize filter artifact to JSON.
@@ -242,10 +292,10 @@ class XorFilter(AMQFilter):
             fingerprint_bits=int(payload["fingerprint_bits"]),
             backend=str(payload.get("requested_backend", "auto")),
         )
-        filt._backend_name = str(payload.get("backend_name", "fallback:fingerprint_set"))
+        filt._backend_name = str(payload.get("backend_name", "fallback:static_bloom"))
         filt._inserted_count = int(payload.get("inserted_count", 0))
         filt._build_time_seconds = payload.get("build_time_seconds")
-        filt._fallback = _FingerprintSetFallback.from_payload(payload["fallback_payload"])
+        filt._fallback = _StaticBloomFallback.from_payload(payload["fallback_payload"])
         filt._built = True
         return filt
 
@@ -259,7 +309,11 @@ class XorFilter(AMQFilter):
                 "requested_backend": self.requested_backend,
             },
             inserted_keys=self._inserted_count,
-            target_false_positive_rate=2 ** (-self.fingerprint_bits),
+            target_false_positive_rate=(
+                2 ** (-self.fingerprint_bits)
+                if self._native_obj is not None
+                else self._fallback.target_fpr
+            ),
             actual_memory_usage_bytes=self.memory_usage_bytes(),
             build_time_seconds=self._build_time_seconds,
         )
@@ -268,8 +322,8 @@ class XorFilter(AMQFilter):
             {
                 "built": self._built,
                 "note": (
-                    "fallback backend is not a true XOR filter; use native backend "
-                    "for publication-quality XOR comparisons"
+                    "fallback backend uses static Bloom and is not a true XOR filter; "
+                    "use native backend for publication-quality XOR comparisons"
                     if self._backend_name.startswith("fallback")
                     else "native backend active"
                 ),

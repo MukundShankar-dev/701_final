@@ -1,0 +1,43 @@
+{
+  "avg_latency_us": 2.8315729286987334,
+  "build_time_seconds": 1.3610738749848679,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 404248.65490530164,
+    "repeated_qps": 473231.518256827,
+    "sequential_qps": 402479.27270626364
+  },
+  "dataset_name": "synth_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 479062,
+    "bits_per_item": 9.585059023609444,
+    "build_time_seconds": 1.3610252500511706,
+    "built": true,
+    "filter_name": "bloom",
+    "inserted_keys": 399840,
+    "parameters": {
+      "expected_items": 399840,
+      "false_positive_rate": 0.01,
+      "hash_seed": 7,
+      "num_bits": 3832490,
+      "num_hashes": 7
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.009,
+  "filter_params": {
+    "expected_items": 399840,
+    "false_positive_rate": 0.01
+  },
+  "filter_type": "bloom",
+  "inserted_keys": 399840,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.1981342537014805,
+  "memory_usage_bytes": 479062,
+  "p50_latency_us": 2.815441641723737,
+  "p95_latency_us": 2.815441641723737,
+  "p99_latency_us": 2.815441641723737,
+  "run_id": "bloom_synth_k21_k21_1585bafafe_run1",
+  "throughput_qps": 353160.60196251277,
+  "true_positive_rate": 1.0
+}

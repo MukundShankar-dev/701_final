@@ -86,6 +86,20 @@ python scripts/run_benchmarks.py \
 	--repetitions 3
 ```
 
+By default, the script infers k from the dataset file and runs all filter families.
+For a fixed k dataset like synth_k21, this avoids invalid k sweeps automatically.
+
+### 4) Plot benchmark results
+
+```bash
+python scripts/plot_results.py \
+	--results-dir benchmarking/results \
+	--output-dir benchmarking/results/plots
+```
+
+This generates cross-k plots using the nearest target FPR per filter/k around
+reference 1e-3, plus a dedicated achieved-vs-target FPR sweep plot.
+
 ## CLI Examples by Subsystem
 
 ### Bloom
@@ -132,6 +146,17 @@ python -m learned_filters.cli train \
 python -m benchmarking.cli run --config path/to/experiment_config.json
 ```
 
+Use this when you want strict, explicit control for one experiment configuration.
+Use scripts/run_benchmarks.py when you want automatic multi-filter sweeps.
+
+## Which commands are required?
+
+- scripts/generate_synthetic_data.py: required to create input k-mers (unless you already have them).
+- scripts/run_benchmarks.py: enough to run all implemented filters on that dataset.
+- scripts/build_all.py: optional convenience step to build and inspect standalone artifacts.
+- per-filter module CLIs (python -m bloom_filters.cli, etc.): optional, useful for targeted debugging.
+- python -m benchmarking.cli run --config ...: optional single-config runner for reproducible custom experiments.
+
 ## Experiment Config Format
 
 Use JSON matching benchmarking.ExperimentConfig:
@@ -171,6 +196,13 @@ Key fields include:
 - throughput_qps
 - avg/p50/p95/p99 latency (microseconds)
 - cache proxy metrics (sequential/random/repeated query throughput)
+
+Default plot outputs:
+- false_positive_rate_by_filter.png
+- throughput_by_filter.png
+- memory_per_kmer_by_filter.png
+- build_time_by_filter.png
+- fpr_vs_target.png
 
 ## Notes on Pure-Python Limitations
 

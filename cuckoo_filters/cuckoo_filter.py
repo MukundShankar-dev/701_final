@@ -19,6 +19,11 @@ def _next_power_of_two(value: int) -> int:
     return 1 << (value - 1).bit_length()
 
 
+def _approx_false_positive_rate(bucket_size: int, fingerprint_bits: int) -> float:
+    """Approximate Cuckoo filter FPR using ``(2*b)/2^f``."""
+    return min(1.0, (2.0 * bucket_size) / (2 ** fingerprint_bits))
+
+
 class CuckooFilter(AMQFilter, SupportsDeletion):
     """Fingerprint-based Cuckoo filter with two candidate buckets per key."""
 
@@ -234,6 +239,7 @@ class CuckooFilter(AMQFilter, SupportsDeletion):
 
     def stats(self) -> dict[str, Any]:
         """Return implementation statistics and metadata."""
+        approx_fpr = _approx_false_positive_rate(self.bucket_size, self.fingerprint_bits)
         metadata = FilterBuildMetadata(
             filter_name=self.FILTER_NAME,
             parameters={
@@ -245,7 +251,7 @@ class CuckooFilter(AMQFilter, SupportsDeletion):
                 "random_seed": self.random_seed,
             },
             inserted_keys=self._inserted_count,
-            target_false_positive_rate=2 ** (-self.fingerprint_bits),
+            target_false_positive_rate=approx_fpr,
             actual_memory_usage_bytes=self.memory_usage_bytes(),
             build_time_seconds=self._build_time_seconds,
         )
@@ -254,6 +260,7 @@ class CuckooFilter(AMQFilter, SupportsDeletion):
             {
                 "load_factor": self.load_factor(),
                 "insertion_failures": self._insertion_failures,
+                "fingerprint_only_false_positive_rate": 2 ** (-self.fingerprint_bits),
                 "built": self._built,
             }
         )

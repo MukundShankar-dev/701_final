@@ -1,0 +1,41 @@
+{
+  "avg_latency_us": 3.3467500315358243,
+  "build_time_seconds": 1.5901076660957187,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 372805.8792961973,
+    "repeated_qps": 333504.4124690984,
+    "sequential_qps": 372744.49533984397
+  },
+  "dataset_name": "synth_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 720915,
+    "build_time_seconds": 1.5901062090415508,
+    "built": true,
+    "filter_name": "xor",
+    "inserted_keys": 399760,
+    "note": "fallback backend uses static Bloom and is not a true XOR filter; use native backend for publication-quality XOR comparisons",
+    "parameters": {
+      "backend": "fallback:static_bloom",
+      "fingerprint_bits": 10,
+      "requested_backend": "auto"
+    },
+    "target_false_positive_rate": 0.0009765625
+  },
+  "false_positive_rate": 0.0008,
+  "filter_params": {
+    "backend": "auto",
+    "fingerprint_bits": 10
+  },
+  "filter_type": "xor",
+  "inserted_keys": 399760,
+  "k": 31,
+  "memory_per_kmer_bytes": 1.803369521713028,
+  "memory_usage_bytes": 720915,
+  "p50_latency_us": 3.345158346928656,
+  "p95_latency_us": 3.345158346928656,
+  "p99_latency_us": 3.345158346928656,
+  "run_id": "xor_synth_k31_k31_1741391d81_run0",
+  "throughput_qps": 298797.3378881541,
+  "true_positive_rate": 1.0
+}

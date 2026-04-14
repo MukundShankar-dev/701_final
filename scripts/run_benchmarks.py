@@ -3,10 +3,46 @@
 from __future__ import annotations
 
 import argparse
+import math
 from pathlib import Path
+from typing import Sequence
 
 from benchmarking.benchmark_runner import run_and_save
 from benchmarking.experiment_config import ExperimentConfig
+
+
+def _parse_csv_list(raw: str, cast: type[int] | type[float] | type[str]) -> list[int] | list[float] | list[str]:
+    items = [item.strip() for item in raw.split(",") if item.strip()]
+    return [cast(item) for item in items]
+
+
+def _infer_k_from_dataset(dataset_path: str) -> int:
+    path = Path(dataset_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Dataset file not found: {path}")
+
+    with path.open("r", encoding="utf-8") as handle:
+        for raw in handle:
+            key = raw.strip()
+            if key:
+                return len(key)
+    raise ValueError(f"Dataset file is empty: {path}")
+
+
+def _cuckoo_fingerprint_bits_for_target_fpr(target_fpr: float, *, bucket_size: int = 4) -> int:
+    """Return fingerprint bits using ``FPR ~= (2*b)/2^f`` for Cuckoo filters."""
+    if not 0.0 < target_fpr < 1.0:
+        raise ValueError("target_fpr must be in (0, 1)")
+    if bucket_size <= 0:
+        raise ValueError("bucket_size must be > 0")
+    return max(2, math.ceil(math.log2((2.0 * bucket_size) / target_fpr)))
+
+
+def _xor_fingerprint_bits_for_target_fpr(target_fpr: float) -> int:
+    """Pick fingerprint bits so ``2^-f`` is at or below the target FPR."""
+    if not 0.0 < target_fpr < 1.0:
+        raise ValueError("target_fpr must be in (0, 1)")
+    return max(2, math.ceil(-math.log2(target_fpr)))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -16,15 +52,40 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", default="benchmarking/results", help="Result directory")
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--repetitions", type=int, default=3, help="Repetitions per run")
+    parser.add_argument(
+        "--k-values",
+        default=None,
+        help="Comma-separated k values (e.g., 15,21,31). Defaults to inferred dataset k.",
+    )
+    parser.add_argument(
+        "--fprs",
+        default="1e-2,1e-3,1e-4",
+        help="Comma-separated target FPR values.",
+    )
+    parser.add_argument(
+        "--filters",
+        default="bloom,cuckoo,xor,learned",
+        help="Comma-separated filter families to run.",
+    )
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
 
-    ks = [15, 21, 31]
-    fprs = [1e-2, 1e-3, 1e-4]
-    filters = ["bloom", "cuckoo", "xor", "learned"]
+    if args.k_values is None:
+        ks: Sequence[int] = [_infer_k_from_dataset(args.dataset)]
+    else:
+        ks = _parse_csv_list(args.k_values, int)
+
+    fprs = _parse_csv_list(args.fprs, float)
+    filters = _parse_csv_list(args.filters, str)
+
+    if not fprs:
+        raise ValueError("--fprs must contain at least one value")
+    for fpr in fprs:
+        if not 0.0 < float(fpr) < 1.0:
+            raise ValueError(f"FPR values must be in (0, 1), got {fpr}")
 
     out_root = Path(args.output_dir)
     out_root.mkdir(parents=True, exist_ok=True)
@@ -37,11 +98,19 @@ def main() -> None:
                 if filt == "bloom":
                     params = {"false_positive_rate": fpr}
                 elif filt == "cuckoo":
-                    fp_bits = 8 if fpr >= 1e-2 else 12 if fpr >= 1e-3 else 14
-                    params = {"fingerprint_bits": fp_bits}
+                    fp_bits = _cuckoo_fingerprint_bits_for_target_fpr(float(fpr), bucket_size=4)
+                    params = {
+                        "false_positive_rate": fpr,
+                        "fingerprint_bits": fp_bits,
+                        "bucket_size": 4,
+                    }
                 elif filt == "xor":
-                    fp_bits = 8 if fpr >= 1e-2 else 10 if fpr >= 1e-3 else 12
-                    params = {"fingerprint_bits": fp_bits, "backend": "auto"}
+                    fp_bits = _xor_fingerprint_bits_for_target_fpr(float(fpr))
+                    params = {
+                        "false_positive_rate": fpr,
+                        "fingerprint_bits": fp_bits,
+                        "backend": "auto",
+                    }
                 else:
                     params = {"backup_false_positive_rate": fpr, "model_threshold": 0.5}
 

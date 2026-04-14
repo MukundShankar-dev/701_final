@@ -2,21 +2,28 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import time
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from benchmarking.cache_proxy import run_cache_proxy_bench
 from benchmarking.experiment_config import ExperimentConfig
 from benchmarking.metrics import compute_build_metrics, compute_query_metrics
 from benchmarking.query_sets import sample_query_sets
 from benchmarking.results import BenchmarkRunResult, append_results_csv, save_run_result_json
-from benchmarking.timing import measure_batch_query_time
+from benchmarking.timing import TimingResult, measure_batch_query_time
 from bloom_filters.bloom_filter import BloomFilter
 from cuckoo_filters.cuckoo_filter import CuckooFilter
 from data.io_utils import load_kmers
 from learned_filters.learned_filter import LearnedFilter
 from xor_filters.xor_filter import XorFilter
+
+
+def _param_signature(params: dict[str, Any]) -> str:
+    payload = json.dumps(params, sort_keys=True, default=str, separators=(",", ":"))
+    return hashlib.blake2s(payload.encode("utf-8"), digest_size=5).hexdigest()
 
 
 def _make_filter(config: ExperimentConfig) -> Any:
@@ -103,12 +110,13 @@ def run_single_benchmark(config: ExperimentConfig, *, run_index: int = 0) -> Ben
     negative_pred_count = sum(1 for v in neg_preds if v)
 
     total_query_count = len(queries.positives) + len(queries.negatives)
-    merged_timing = pos_timing
-    merged_timing.total_seconds = pos_timing.total_seconds + neg_timing.total_seconds
-    merged_timing.mean_seconds = pos_timing.mean_seconds + neg_timing.mean_seconds
-    merged_timing.per_item_seconds = [
-        p + n for p, n in zip(pos_timing.per_item_seconds, neg_timing.per_item_seconds, strict=True)
-    ]
+    merged_timing = TimingResult(
+        total_seconds=pos_timing.total_seconds + neg_timing.total_seconds,
+        mean_seconds=pos_timing.mean_seconds + neg_timing.mean_seconds,
+        per_item_seconds=[
+            p + n for p, n in zip(pos_timing.per_item_seconds, neg_timing.per_item_seconds, strict=True)
+        ],
+    )
 
     query_metrics = compute_query_metrics(
         positive_truth_count=len(queries.positives),
@@ -133,8 +141,9 @@ def run_single_benchmark(config: ExperimentConfig, *, run_index: int = 0) -> Ben
         random_seed=config.random_seed + run_index,
     )
 
+    param_sig = _param_signature(dict(config.filter_params))
     result = BenchmarkRunResult(
-        run_id=f"{config.filter_type}_{config.dataset_name}_run{run_index}",
+        run_id=f"{config.filter_type}_{config.dataset_name}_k{config.k}_{param_sig}_run{run_index}",
         dataset_name=config.dataset_name,
         filter_type=config.filter_type,
         filter_params=dict(config.filter_params),

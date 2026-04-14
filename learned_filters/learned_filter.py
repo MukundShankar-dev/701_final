@@ -66,6 +66,17 @@ class LearnedFilter(AMQFilter):
         train_set, val_set, _ = split_dataset(dataset)
 
         self.model.fit(train_set.kmers, train_set.labels)
+
+        val_positive = [k for k, y in zip(val_set.kmers, val_set.labels, strict=True) if y == 1]
+        val_negative = [k for k, y in zip(val_set.kmers, val_set.labels, strict=True) if y == 0]
+
+        tuning = self.model.tune_threshold(
+            positive_kmers=val_positive,
+            negative_kmers=val_negative,
+            target_model_fpr=self.backup_false_positive_rate,
+        )
+        self.model_threshold = self.model.threshold
+
         eval_metrics = self.model.evaluate(val_set.kmers, val_set.labels)
 
         positives = [k.upper() for k in positive_kmers]
@@ -82,6 +93,7 @@ class LearnedFilter(AMQFilter):
         self._build_time_seconds = time.perf_counter() - start
         self._last_eval = {
             **eval_metrics,
+            **tuning,
             "model_false_negative_count": float(len(model_false_negatives)),
             "model_false_negative_rate": float(len(model_false_negatives) / max(1, len(positives))),
         }
@@ -102,7 +114,20 @@ class LearnedFilter(AMQFilter):
         return self.backup_filter.contains(key)
 
     def batch_contains(self, keys: Sequence[str]) -> list[bool]:
-        return [self.contains(k) for k in keys]
+        query_list = list(keys)
+        if not query_list:
+            return []
+
+        preds = self.model.predict(query_list)
+        out: list[bool] = []
+        for key, pred in zip(query_list, preds, strict=True):
+            if int(pred) == 1:
+                out.append(True)
+            elif self.backup_filter is not None:
+                out.append(self.backup_filter.contains(key))
+            else:
+                out.append(False)
+        return out
 
     def memory_usage_bytes(self) -> int:
         # Rough estimate: sklearn model params are not trivial to size precisely.

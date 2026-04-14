@@ -108,15 +108,89 @@ class KmerLogisticModel:
         probs = self.predict_proba(kmers)
         preds = (probs >= self.threshold).astype(np.int32)
 
+        positives = y_true == 1
+        negatives = y_true == 0
+        true_positive_rate = float(np.mean(preds[positives] == 1)) if np.any(positives) else 0.0
+        false_positive_rate = float(np.mean(preds[negatives] == 1)) if np.any(negatives) else 0.0
+
         out: dict[str, float] = {
             "accuracy": float(accuracy_score(y_true, preds)),
             "avg_precision": float(average_precision_score(y_true, probs)),
+            "true_positive_rate": true_positive_rate,
+            "false_positive_rate": false_positive_rate,
+            "threshold": float(self.threshold),
         }
         try:
             out["roc_auc"] = float(roc_auc_score(y_true, probs))
         except ValueError:
             out["roc_auc"] = float("nan")
         return out
+
+    def tune_threshold(
+        self,
+        positive_kmers: Sequence[str],
+        negative_kmers: Sequence[str],
+        *,
+        target_model_fpr: float,
+        candidate_count: int = 101,
+    ) -> dict[str, float]:
+        """Tune threshold from validation probabilities.
+
+        Strategy:
+        1) Evaluate candidate thresholds from probability quantiles.
+        2) Prefer thresholds meeting ``model_fpr <= target_model_fpr``.
+        3) Within feasible thresholds, minimize model false negative rate.
+        4) If infeasible, minimize model false positive rate.
+        """
+        if not 0.0 <= target_model_fpr <= 1.0:
+            raise ValueError("target_model_fpr must be in [0, 1]")
+        if candidate_count < 3:
+            raise ValueError("candidate_count must be >= 3")
+
+        if not positive_kmers or not negative_kmers:
+            return {
+                "selected_threshold": float(self.threshold),
+                "model_fpr": float("nan"),
+                "model_fnr": float("nan"),
+                "target_model_fpr": float(target_model_fpr),
+                "used_fallback_selection": 1.0,
+            }
+
+        pos_probs = self.predict_proba(positive_kmers)
+        neg_probs = self.predict_proba(negative_kmers)
+
+        combined = np.concatenate([pos_probs, neg_probs])
+        quantiles = np.linspace(0.0, 1.0, candidate_count)
+        candidates = np.unique(np.quantile(combined, quantiles))
+        candidates = np.concatenate(([0.0], candidates, [1.0]))
+
+        feasible: list[tuple[float, float, float]] = []
+        all_scores: list[tuple[float, float, float]] = []
+
+        for thr in candidates:
+            model_fpr = float(np.mean(neg_probs >= thr))
+            model_fnr = float(np.mean(pos_probs < thr))
+
+            all_scores.append((model_fpr, model_fnr, float(thr)))
+            if model_fpr <= target_model_fpr:
+                feasible.append((model_fpr, model_fnr, float(thr)))
+
+        if feasible:
+            # Minimize backup size proxy (FNR) while satisfying model-FPR target.
+            chosen_fpr, chosen_fnr, chosen_thr = min(feasible, key=lambda t: (t[1], t[0], -t[2]))
+            used_fallback = 0.0
+        else:
+            chosen_fpr, chosen_fnr, chosen_thr = min(all_scores, key=lambda t: (t[0], t[1], -t[2]))
+            used_fallback = 1.0
+
+        self.threshold = float(chosen_thr)
+        return {
+            "selected_threshold": float(chosen_thr),
+            "model_fpr": float(chosen_fpr),
+            "model_fnr": float(chosen_fnr),
+            "target_model_fpr": float(target_model_fpr),
+            "used_fallback_selection": used_fallback,
+        }
 
     def save(self, path: str | Path) -> None:
         out_path = Path(path)
