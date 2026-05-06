@@ -1,0 +1,28 @@
+# Python environments
+.venv/
+venv/
+env/
+.env/
+.conda/
+
+# Python caches and test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# macOS/editor files
+.DS_Store
+
+# Generated real genome inputs and derived k-mer datasets
+data/raw/
+data/datasets/real/
+
+# Generated final benchmark outputs
+benchmarking/final_results/
+
+# Local scratch artifacts
+*.log
+*.tmp

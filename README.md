@@ -18,6 +18,9 @@ The framework is designed for reproducible experiments comparing:
 
 It supports genomic-like data workflows including FASTA-based k-mer extraction and synthetic dataset generation.
 
+For real bacterial FASTA downloads and Jellyfish-based k-mer extraction, see
+`JELLYFISH_DATA_WORKFLOW.md`.
+
 ## Repository Layout
 
 - bloom_filters/: Bloom filter implementation, builder, CLI

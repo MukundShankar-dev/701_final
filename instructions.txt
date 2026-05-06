@@ -1,0 +1,51 @@
+The semester project is intended to be a mini research project completed in groups of two. Projects should combine:
+
+A clear algorithmic problem statement
+A principled data structure or algorithmic contribution
+Theoretical analysis (when appropriate)
+A careful empirical evaluation
+A short conference-style write-up (~5-pages)
+
+
+Overall Goal
+
+Implement and benchmark multiple AMQ data structures for large k-mer sets, including:
+
+Bloom filters
+XOR filters
+Cuckoo filters
+Possibly learned filters
+Evaluate:
+
+Memory per k-mer
+False positive rate
+Query speed
+Cache behavior
+Why This Is Interesting
+
+AMQs are fundamental to large-scale genomic search systems. Genome repetitiveness and skewed distributions may make learned or hybrid approaches particularly effective.
+
+Relevant Concepts
+
+Probabilistic data structures
+False positive analysis
+Cache-aware hashing
+Learned index structures
+Jumping Off Point
+
+Papers
+
+Graf & Lemire (2020). Xor Filters: Faster and Smaller Than Bloom and Cuckoo Filters.
+https://arxiv.org/abs/2002.07311
+
+Pandey et al. (2018). Mantis.
+https://doi.org/10.1016/j.cels.2018.05.021
+
+Limasset. (2026). ZOR filters: fast and smaller than fuse filters.
+https://arxiv.org/abs/2602.03525
+
+Starter Data
+
+k-mer sets from bacterial genomes
+Jellyfish k-mer counter:
+https://github.com/gmarcais/Jellyfish
