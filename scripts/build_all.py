@@ -48,6 +48,7 @@ def main() -> None:
         args.kmer_file,
         deduplicate=True,
         backend="auto",
+        hash_seed=args.seed,
     )
     xor_path = out_dir / "xor.json"
     xorf.save(xor_path)

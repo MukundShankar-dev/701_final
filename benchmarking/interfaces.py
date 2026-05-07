@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Protocol, Self, Sequence, runtime_checkable
+from typing import Any, Protocol, Sequence, runtime_checkable
 
 
 @dataclass(slots=True)
@@ -54,7 +54,7 @@ class AMQFilter(Protocol):
         """Serialize filter state to disk."""
 
     @classmethod
-    def load(cls, path: str | Path) -> Self:
+    def load(cls, path: str | Path) -> "AMQFilter":
         """Load serialized filter state and return a new instance."""
 
     def stats(self) -> dict[str, Any]:
@@ -88,7 +88,7 @@ class AMQFilterBase(ABC):
 
     @classmethod
     @abstractmethod
-    def load(cls, path: str | Path) -> Self:
+    def load(cls, path: str | Path) -> "AMQFilterBase":
         """Load serialized filter state and return a new instance."""
 
     @abstractmethod

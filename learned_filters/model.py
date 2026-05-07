@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any, Sequence
 
 import numpy as np
-from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.metrics import accuracy_score, average_precision_score, roc_auc_score
 
 
@@ -63,30 +64,97 @@ class KmerFeatureExtractor:
 
 
 class KmerLogisticModel:
-    """Thin wrapper around scikit-learn LogisticRegression for k-mers."""
+    """Classifier wrapper for k-mers.
+
+    Backends:
+    - ``position_logistic``: original dense position-wise one-hot logistic model.
+    - ``ngram_sgd``: sparse hashed character n-gram logistic model trained with
+      SGD. This is a better default for k-mers because it can represent local
+      sequence motifs across positions while remaining scalable.
+    """
 
     def __init__(
         self,
         k: int,
         *,
         random_seed: int = 0,
-        max_iter: int = 400,
+        model_backend: str = "ngram_sgd",
+        max_iter: int = 40,
         C: float = 1.0,
+        alpha: float = 1e-5,
         threshold: float = 0.5,
+        ngram_range: tuple[int, int] = (3, 5),
+        ngram_features: int = 4096,
     ) -> None:
         self.k = k
         self.threshold = threshold
-        self.extractor = KmerFeatureExtractor(k=k)
-        self.model = LogisticRegression(
-            random_state=random_seed,
-            max_iter=max_iter,
-            C=C,
-            solver="lbfgs",
-        )
+        self.random_seed = random_seed
+        self.model_backend = model_backend
+        self.max_iter = max_iter
+        self.C = C
+        self.alpha = alpha
+        self.ngram_range = ngram_range
+        self.ngram_features = ngram_features
+
+        self.extractor: KmerFeatureExtractor | None = None
+        self.vectorizer: HashingVectorizer | None = None
+
+        if model_backend == "position_logistic":
+            self.extractor = KmerFeatureExtractor(k=k)
+            self.model: Any = LogisticRegression(
+                random_state=random_seed,
+                max_iter=max_iter,
+                C=C,
+                solver="lbfgs",
+            )
+        elif model_backend == "ngram_sgd":
+            self.vectorizer = HashingVectorizer(
+                analyzer="char",
+                ngram_range=ngram_range,
+                n_features=ngram_features,
+                alternate_sign=False,
+                lowercase=False,
+                norm="l2",
+                dtype=np.float32,
+            )
+            self.model = SGDClassifier(
+                loss="log_loss",
+                penalty="l2",
+                alpha=alpha,
+                max_iter=max_iter,
+                tol=1e-3,
+                random_state=random_seed,
+                class_weight="balanced",
+            )
+        else:
+            raise ValueError(
+                "Unsupported model_backend; expected 'ngram_sgd' or 'position_logistic', "
+                f"got {model_backend!r}"
+            )
         self._trained = False
 
+    def _normalize_kmers(self, kmers: Sequence[str]) -> list[str]:
+        normalized: list[str] = []
+        for kmer in kmers:
+            kk = kmer.upper()
+            if len(kk) != self.k:
+                raise ValueError(f"Expected k-mer length {self.k}, got {len(kk)} for {kmer}")
+            normalized.append(kk)
+        return normalized
+
+    def _transform(self, kmers: Sequence[str]) -> Any:
+        normalized = self._normalize_kmers(kmers)
+        if self.model_backend == "position_logistic":
+            if self.extractor is None:
+                raise RuntimeError("Position feature extractor is not initialized")
+            return self.extractor.transform(normalized)
+
+        if self.vectorizer is None:
+            raise RuntimeError("N-gram vectorizer is not initialized")
+        return self.vectorizer.transform(normalized)
+
     def fit(self, kmers: Sequence[str], labels: Sequence[int]) -> None:
-        X = self.extractor.transform(kmers)
+        X = self._transform(kmers)
         y = np.asarray(labels, dtype=np.int32)
         if X.shape[0] != y.shape[0]:
             raise ValueError("kmers and labels length mismatch")
@@ -96,7 +164,7 @@ class KmerLogisticModel:
     def predict_proba(self, kmers: Sequence[str]) -> np.ndarray:
         if not self._trained:
             raise RuntimeError("Model is not trained")
-        X = self.extractor.transform(kmers)
+        X = self._transform(kmers)
         return self.model.predict_proba(X)[:, 1]
 
     def predict(self, kmers: Sequence[str]) -> np.ndarray:
@@ -113,16 +181,22 @@ class KmerLogisticModel:
         true_positive_rate = float(np.mean(preds[positives] == 1)) if np.any(positives) else 0.0
         false_positive_rate = float(np.mean(preds[negatives] == 1)) if np.any(negatives) else 0.0
 
+        avg_precision = (
+            float(average_precision_score(y_true, probs))
+            if np.any(positives)
+            else float("nan")
+        )
+
         out: dict[str, float] = {
             "accuracy": float(accuracy_score(y_true, preds)),
-            "avg_precision": float(average_precision_score(y_true, probs)),
+            "avg_precision": avg_precision,
             "true_positive_rate": true_positive_rate,
             "false_positive_rate": false_positive_rate,
             "threshold": float(self.threshold),
         }
-        try:
+        if np.any(positives) and np.any(negatives):
             out["roc_auc"] = float(roc_auc_score(y_true, probs))
-        except ValueError:
+        else:
             out["roc_auc"] = float("nan")
         return out
 
@@ -192,13 +266,32 @@ class KmerLogisticModel:
             "used_fallback_selection": used_fallback,
         }
 
+    def memory_usage_bytes(self) -> int:
+        """Return a compact estimate of learned model parameters."""
+        total = 0
+        for attr in ("coef_", "intercept_", "classes_"):
+            value = getattr(self.model, attr, None)
+            if hasattr(value, "nbytes"):
+                total += int(value.nbytes)
+        # HashingVectorizer is stateless; include a small fixed accounting term
+        # for backend metadata so tiny models do not report zero bytes.
+        return max(total, 64)
+
     def save(self, path: str | Path) -> None:
         out_path = Path(path)
         out_path.parent.mkdir(parents=True, exist_ok=True)
         payload: dict[str, Any] = {
             "k": self.k,
             "threshold": self.threshold,
+            "random_seed": self.random_seed,
+            "model_backend": self.model_backend,
+            "max_iter": self.max_iter,
+            "C": self.C,
+            "alpha": self.alpha,
+            "ngram_range": self.ngram_range,
+            "ngram_features": self.ngram_features,
             "extractor": self.extractor,
+            "vectorizer": self.vectorizer,
             "model": self.model,
             "trained": self._trained,
         }
@@ -213,8 +306,19 @@ class KmerLogisticModel:
         with in_path.open("rb") as handle:
             payload = pickle.load(handle)
 
-        inst = cls(k=int(payload["k"]), threshold=float(payload["threshold"]))
+        inst = cls(
+            k=int(payload["k"]),
+            threshold=float(payload["threshold"]),
+            random_seed=int(payload.get("random_seed", 0)),
+            model_backend=str(payload.get("model_backend", "position_logistic")),
+            max_iter=int(payload.get("max_iter", 400)),
+            C=float(payload.get("C", 1.0)),
+            alpha=float(payload.get("alpha", 1e-5)),
+            ngram_range=tuple(payload.get("ngram_range", (3, 5))),
+            ngram_features=int(payload.get("ngram_features", 4096)),
+        )
         inst.extractor = payload["extractor"]
+        inst.vectorizer = payload.get("vectorizer")
         inst.model = payload["model"]
         inst._trained = bool(payload["trained"])
         return inst

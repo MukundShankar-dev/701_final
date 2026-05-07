@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 22.113916002369177,
+  "build_time_seconds": 29.830656624981202,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 46159.58656025557,
+    "repeated_qps": 49914.47303177131,
+    "sequential_qps": 46358.03547060446
+  },
+  "dataset_name": "synth_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 490129,
+    "build_time_seconds": 29.80133608309552,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 399760,
+    "model_eval": {
+      "accuracy": 0.5009005403241945,
+      "avg_precision": 0.528152765646834,
+      "false_positive_rate": 0.008826964792257634,
+      "model_false_negative_count": 395389.0,
+      "model_false_negative_rate": 0.9890659395637382,
+      "model_fnr": 0.9888162938764625,
+      "model_fpr": 0.008826964792257634,
+      "roc_auc": 0.5360867824577967,
+      "selected_threshold": 0.6056173531309691,
+      "target_model_fpr": 0.01,
+      "threshold": 0.6056173531309691,
+      "true_positive_rate": 0.011183706123537451,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.01,
+      "k": 31,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 0.6056173531309691,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.0173,
+  "filter_params": {
+    "backup_false_positive_rate": 0.01,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 399760,
+  "k": 31,
+  "memory_per_kmer_bytes": 1.2260581348809285,
+  "memory_usage_bytes": 490129,
+  "p50_latency_us": 22.05561250448227,
+  "p95_latency_us": 22.05561250448227,
+  "p99_latency_us": 22.05561250448227,
+  "run_id": "learned_synth_k31_k31_f65d2a8089_run0",
+  "throughput_qps": 45220.3942482582,
+  "true_positive_rate": 1.0
+}

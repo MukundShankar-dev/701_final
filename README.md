@@ -5,8 +5,8 @@ This repository provides a modular, reproducible Python framework for benchmarki
 Implemented filter families:
 - Bloom filters
 - Cuckoo filters
-- XOR filter facade (native-backend hook + deterministic Python fallback)
-- Learned filter prototype (classifier + backup Bloom filter)
+- XOR filters (native-backend hook + pure-Python peel-based backend)
+- Learned filter prototype (hashed character n-gram classifier + backup Bloom filter)
 
 ## Project Goals
 
@@ -140,7 +140,8 @@ python -m learned_filters.cli train \
 	--kmer-file data/datasets/synth_k21.txt \
 	--output data/datasets/learned_k21 \
 	--k 21 \
-	--backup-fpr 1e-3
+	--backup-fpr 1e-3 \
+	--model-backend ngram_sgd
 ```
 
 ### Benchmark Runner CLI
@@ -209,9 +210,13 @@ Default plot outputs:
 
 ## Notes on Pure-Python Limitations
 
-- XOR fallback backend is a placeholder AMQ-compatible implementation, not a mathematically faithful XOR filter construction.
+- XOR uses a real peel-based XOR filter when no native package is available,
+  but the pure-Python implementation is slower than production native filters.
 - Hardware cache counters are not collected directly; cache_proxy.py reports timing-based proxies.
 - Python memory accounting is approximate; compare metrics consistently across methods and include serialized artifact sizes when possible.
+- Learned filters preserve no-false-negative AMQ behavior with a backup Bloom
+  filter. On random synthetic k-mers, the learned classifier may not reduce the
+  backup size much because true set membership has little learnable structure.
 
 ## Reproducibility Guidance
 
@@ -222,7 +227,7 @@ Default plot outputs:
 
 ## Suggested Next Optimization Steps
 
-- Add a native XOR backend package and wire it through xor_filters/xor_filter.py.
+- Add a native XOR backend package for speed and compare it against the Python XOR backend.
 - Add optional C/C++ or Rust-backed Cuckoo/Bloom variants behind same interfaces.
 - Extend result aggregation with confidence intervals and statistical tests.
 - Add plotting notebooks or scripts for publication-ready figures.

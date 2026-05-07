@@ -1,0 +1,47 @@
+{
+  "avg_latency_us": 2.8059339985096208,
+  "build_time_seconds": 2.3944132500328124,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 364189.6503059399,
+    "repeated_qps": 372449.4935779983,
+    "sequential_qps": 364080.2502049737
+  },
+  "dataset_name": "synth_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 860484,
+    "build_time_seconds": 2.3621582080377266,
+    "built": true,
+    "filter_name": "xor",
+    "inserted_keys": 399760,
+    "note": "pure-Python peel-based XOR backend active",
+    "parameters": {
+      "array_length": 491705,
+      "backend": "python:xor",
+      "build_attempts": 1,
+      "fingerprint_bits": 14,
+      "hash_seed": 7,
+      "requested_backend": "auto",
+      "size_factor": 1.23
+    },
+    "target_false_positive_rate": 6.103515625e-05
+  },
+  "false_positive_rate": 0.0,
+  "filter_params": {
+    "backend": "auto",
+    "false_positive_rate": 0.0001,
+    "fingerprint_bits": 14,
+    "hash_seed": 7
+  },
+  "filter_type": "xor",
+  "inserted_keys": 399760,
+  "k": 31,
+  "memory_per_kmer_bytes": 2.15250150090054,
+  "memory_usage_bytes": 860484,
+  "p50_latency_us": 2.7983312495052814,
+  "p95_latency_us": 2.7983312495052814,
+  "p99_latency_us": 2.7983312495052814,
+  "run_id": "xor_synth_k31_k31_9f96afcd98_run0",
+  "throughput_qps": 356387.5702461828,
+  "true_positive_rate": 1.0
+}

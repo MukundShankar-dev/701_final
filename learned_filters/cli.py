@@ -22,6 +22,9 @@ def _train_command(args: argparse.Namespace) -> None:
         model_threshold=args.threshold,
         backup_false_positive_rate=args.backup_fpr,
         random_seed=args.seed,
+        model_backend=args.model_backend,
+        ngram_features=args.ngram_features,
+        ngram_range=(args.ngram_min, args.ngram_max),
     )
 
     metrics = filt.train(
@@ -87,6 +90,15 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument("--backup-fpr", type=float, default=1e-3, help="Backup Bloom filter FPR")
     train.add_argument("--negative-count", type=int, default=None, help="Negative samples for training")
     train.add_argument("--negative-mutation-rate", type=float, default=0.2, help="Negative mutation rate")
+    train.add_argument(
+        "--model-backend",
+        default="ngram_sgd",
+        choices=["ngram_sgd", "position_logistic"],
+        help="Classifier backend",
+    )
+    train.add_argument("--ngram-features", type=int, default=4096, help="Hashed n-gram feature count")
+    train.add_argument("--ngram-min", type=int, default=3, help="Minimum character n-gram length")
+    train.add_argument("--ngram-max", type=int, default=5, help="Maximum character n-gram length")
     train.add_argument("--seed", type=int, default=0, help="Random seed")
     train.add_argument("--deduplicate", action="store_true", help="Deduplicate input positives")
     train.set_defaults(func=_train_command)

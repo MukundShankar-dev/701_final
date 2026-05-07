@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 18.490752765986446,
+  "build_time_seconds": 22.02633266604971,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 61746.46796623696,
+    "repeated_qps": 66105.734543395,
+    "sequential_qps": 63411.61919134152
+  },
+  "dataset_name": "synth_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 734992,
+    "build_time_seconds": 21.995675207930617,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 399840,
+    "model_eval": {
+      "accuracy": 0.4997248899559824,
+      "avg_precision": 0.520378736380764,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 399840.0,
+      "model_false_negative_rate": 1.0,
+      "model_fnr": 1.0,
+      "model_fpr": 0.0,
+      "roc_auc": 0.5247848557219751,
+      "selected_threshold": 1.0,
+      "target_model_fpr": 0.001,
+      "threshold": 1.0,
+      "true_positive_rate": 0.0,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.001,
+      "k": 21,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 1.0,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.001
+  },
+  "false_positive_rate": 0.0014,
+  "filter_params": {
+    "backup_false_positive_rate": 0.001,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 399840,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.8382152861144458,
+  "memory_usage_bytes": 734992,
+  "p50_latency_us": 18.7185604008846,
+  "p95_latency_us": 18.7185604008846,
+  "p99_latency_us": 18.7185604008846,
+  "run_id": "learned_synth_k21_k21_ddf41a4ee3_run0",
+  "throughput_qps": 54081.08651149616,
+  "true_positive_rate": 1.0
+}

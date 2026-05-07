@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import shutil
 from pathlib import Path
 from typing import Sequence
 
@@ -50,6 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dataset", required=True, help="Input one-k-mer-per-line file")
     parser.add_argument("--dataset-name", default="input", help="Dataset label")
     parser.add_argument("--output-dir", default="benchmarking/results", help="Result directory")
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Delete the output directory before writing new benchmark results",
+    )
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
     parser.add_argument("--repetitions", type=int, default=3, help="Repetitions per run")
     parser.add_argument(
@@ -70,6 +76,25 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _prepare_output_root(raw_output_dir: str, *, overwrite: bool) -> Path:
+    if not raw_output_dir.strip():
+        raise ValueError("--output-dir cannot be empty; set OUT or pass an explicit path")
+
+    out_root = Path(raw_output_dir)
+    resolved = out_root.resolve()
+    cwd = Path.cwd().resolve()
+
+    if overwrite:
+        forbidden = {Path("/").resolve(), cwd, cwd.parent, Path.home().resolve()}
+        if resolved in forbidden:
+            raise ValueError(f"Refusing to overwrite unsafe output directory: {resolved}")
+        if out_root.exists():
+            shutil.rmtree(out_root)
+
+    out_root.mkdir(parents=True, exist_ok=True)
+    return out_root
+
+
 def main() -> None:
     args = build_parser().parse_args()
 
@@ -87,8 +112,7 @@ def main() -> None:
         if not 0.0 < float(fpr) < 1.0:
             raise ValueError(f"FPR values must be in (0, 1), got {fpr}")
 
-    out_root = Path(args.output_dir)
-    out_root.mkdir(parents=True, exist_ok=True)
+    out_root = _prepare_output_root(args.output_dir, overwrite=args.overwrite)
 
     total_runs = 0
     for k in ks:
@@ -110,9 +134,16 @@ def main() -> None:
                         "false_positive_rate": fpr,
                         "fingerprint_bits": fp_bits,
                         "backend": "auto",
+                        "hash_seed": args.seed,
                     }
                 else:
-                    params = {"backup_false_positive_rate": fpr, "model_threshold": 0.5}
+                    params = {
+                        "backup_false_positive_rate": fpr,
+                        "model_threshold": 0.5,
+                        "model_backend": "ngram_sgd",
+                        "ngram_features": 4096,
+                        "ngram_range": (3, 5),
+                    }
 
                 cfg = ExperimentConfig(
                     dataset_name=args.dataset_name,

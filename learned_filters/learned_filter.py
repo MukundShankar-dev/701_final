@@ -29,16 +29,25 @@ class LearnedFilter(AMQFilter):
         model_threshold: float = 0.5,
         backup_false_positive_rate: float = 1e-3,
         random_seed: int = 0,
+        model_backend: str = "ngram_sgd",
+        ngram_features: int = 4096,
+        ngram_range: tuple[int, int] = (3, 5),
     ) -> None:
         self.k = k
         self.model_threshold = model_threshold
         self.backup_false_positive_rate = backup_false_positive_rate
         self.random_seed = random_seed
+        self.model_backend = model_backend
+        self.ngram_features = ngram_features
+        self.ngram_range = ngram_range
 
         self.model = KmerLogisticModel(
             k=k,
             random_seed=random_seed,
+            model_backend=model_backend,
             threshold=model_threshold,
+            ngram_features=ngram_features,
+            ngram_range=ngram_range,
         )
         self.backup_filter: BackupBloomFilter | None = None
 
@@ -130,9 +139,8 @@ class LearnedFilter(AMQFilter):
         return out
 
     def memory_usage_bytes(self) -> int:
-        # Rough estimate: sklearn model params are not trivial to size precisely.
         backup_bytes = self.backup_filter.bloom.memory_usage_bytes() if self.backup_filter else 0
-        model_estimate = 8 * (self.k * 4 + 1 + 6)
+        model_estimate = self.model.memory_usage_bytes()
         return int(model_estimate + backup_bytes)
 
     def evaluate_heldout(self, dataset: LabeledKmerDataset) -> dict[str, float]:
@@ -157,6 +165,9 @@ class LearnedFilter(AMQFilter):
             "model_threshold": self.model_threshold,
             "backup_false_positive_rate": self.backup_false_positive_rate,
             "random_seed": self.random_seed,
+            "model_backend": self.model_backend,
+            "ngram_features": self.ngram_features,
+            "ngram_range": self.ngram_range,
             "inserted_count": self._inserted_count,
             "build_time_seconds": self._build_time_seconds,
             "last_eval": self._last_eval,
@@ -181,6 +192,9 @@ class LearnedFilter(AMQFilter):
             model_threshold=float(payload["model_threshold"]),
             backup_false_positive_rate=float(payload["backup_false_positive_rate"]),
             random_seed=int(payload.get("random_seed", 0)),
+            model_backend=str(payload.get("model_backend", "position_logistic")),
+            ngram_features=int(payload.get("ngram_features", 4096)),
+            ngram_range=tuple(payload.get("ngram_range", (3, 5))),
         )
 
         model_path = meta_path.parent / payload["model_path"]
@@ -203,6 +217,9 @@ class LearnedFilter(AMQFilter):
                 "k": self.k,
                 "model_threshold": self.model_threshold,
                 "backup_false_positive_rate": self.backup_false_positive_rate,
+                "model_backend": self.model_backend,
+                "ngram_features": self.ngram_features,
+                "ngram_range": self.ngram_range,
             },
             inserted_keys=self._inserted_count,
             target_false_positive_rate=self.backup_false_positive_rate,

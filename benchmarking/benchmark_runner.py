@@ -50,6 +50,9 @@ def _make_filter(config: ExperimentConfig) -> Any:
         return XorFilter(
             fingerprint_bits=int(params.get("fingerprint_bits", 8)),
             backend=str(params.get("backend", "auto")),
+            hash_seed=int(params.get("hash_seed", config.random_seed)),
+            size_factor=float(params.get("size_factor", 1.23)),
+            max_retries=int(params.get("max_retries", 64)),
         )
 
     if filter_type == "learned":
@@ -58,6 +61,9 @@ def _make_filter(config: ExperimentConfig) -> Any:
             model_threshold=float(params.get("model_threshold", 0.5)),
             backup_false_positive_rate=float(params.get("backup_false_positive_rate", 1e-3)),
             random_seed=int(params.get("random_seed", config.random_seed)),
+            model_backend=str(params.get("model_backend", "ngram_sgd")),
+            ngram_features=int(params.get("ngram_features", 4096)),
+            ngram_range=tuple(params.get("ngram_range", (3, 5))),
         )
 
     raise ValueError(f"Unsupported filter type: {config.filter_type}")

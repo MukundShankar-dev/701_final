@@ -14,12 +14,21 @@ def build_xor_filter(
     *,
     fingerprint_bits: int = 8,
     backend: str = "auto",
+    hash_seed: int = 0,
+    size_factor: float = 1.23,
+    max_retries: int = 64,
 ) -> XorFilter:
     """Build XOR filter facade from key sequence."""
     if len(keys) == 0:
         raise ValueError("keys must be non-empty")
 
-    filt = XorFilter(fingerprint_bits=fingerprint_bits, backend=backend)
+    filt = XorFilter(
+        fingerprint_bits=fingerprint_bits,
+        backend=backend,
+        hash_seed=hash_seed,
+        size_factor=size_factor,
+        max_retries=max_retries,
+    )
     filt.build(keys)
     return filt
 
@@ -29,6 +38,9 @@ def build_xor_filter_from_kmer_file(
     *,
     fingerprint_bits: int = 8,
     backend: str = "auto",
+    hash_seed: int = 0,
+    size_factor: float = 1.23,
+    max_retries: int = 64,
     deduplicate: bool = False,
 ) -> XorFilter:
     """Build XOR filter facade from one-k-mer-per-line file."""
@@ -37,4 +49,7 @@ def build_xor_filter_from_kmer_file(
         keys=keys,
         fingerprint_bits=fingerprint_bits,
         backend=backend,
+        hash_seed=hash_seed,
+        size_factor=size_factor,
+        max_retries=max_retries,
     )
