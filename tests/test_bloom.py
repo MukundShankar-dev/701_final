@@ -8,3 +8,10 @@ def test_bloom_no_false_negatives() -> None:
 
     for key in keys:
         assert bf.contains(key)
+
+
+def test_bloom_normalizes_dna_case() -> None:
+    bf = BloomFilter(expected_items=1, false_positive_rate=1e-3)
+    bf.build(["ACGTAC"])
+
+    assert bf.contains("acgtac")

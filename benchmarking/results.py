@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -47,5 +48,18 @@ def append_results_csv(results: list[BenchmarkRunResult], csv_path: str | Path) 
         return 0
 
     rows = [r.to_dict() for r in results]
+    out_path = Path(csv_path)
+    if out_path.exists():
+        existing_run_ids: set[str] = set()
+        with out_path.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            for row in reader:
+                run_id = row.get("run_id")
+                if run_id:
+                    existing_run_ids.add(run_id)
+        rows = [row for row in rows if row.get("run_id") not in existing_run_ids]
+        if not rows:
+            return 0
+
     fieldnames = list(rows[0].keys())
-    return append_csv_rows(csv_path, rows, fieldnames=fieldnames)
+    return append_csv_rows(out_path, rows, fieldnames=fieldnames)

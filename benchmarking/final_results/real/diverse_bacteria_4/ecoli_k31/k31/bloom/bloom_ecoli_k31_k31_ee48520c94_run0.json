@@ -1,0 +1,43 @@
+{
+  "avg_latency_us": 5.377833348757122,
+  "build_time_seconds": 27.8090365419921,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 257817.41508661627,
+    "repeated_qps": 259771.55823682973,
+    "sequential_qps": 257560.47754211002
+  },
+  "dataset_name": "ecoli_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 10952940,
+    "bits_per_item": 19.170116908515045,
+    "build_time_seconds": 27.806726750015514,
+    "built": true,
+    "filter_name": "bloom",
+    "inserted_keys": 4570839,
+    "parameters": {
+      "expected_items": 4570839,
+      "false_positive_rate": 0.0001,
+      "hash_seed": 7,
+      "num_bits": 87623518,
+      "num_hashes": 13
+    },
+    "target_false_positive_rate": 0.0001
+  },
+  "false_positive_rate": 0.0001,
+  "filter_params": {
+    "expected_items": 4570839,
+    "false_positive_rate": 0.0001
+  },
+  "filter_type": "bloom",
+  "inserted_keys": 4570839,
+  "k": 31,
+  "memory_per_kmer_bytes": 2.3962646682589344,
+  "memory_usage_bytes": 10952940,
+  "p50_latency_us": 5.377833348757122,
+  "p95_latency_us": 5.377833348757122,
+  "p99_latency_us": 5.377833348757122,
+  "run_id": "bloom_ecoli_k31_k31_ee48520c94_run0",
+  "throughput_qps": 185948.49173433598,
+  "true_positive_rate": 1.0
+}

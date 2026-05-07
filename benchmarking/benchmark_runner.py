@@ -180,6 +180,7 @@ def run_and_save(config: ExperimentConfig) -> list[BenchmarkRunResult]:
     """Run benchmark repetitions and persist JSON + aggregate CSV outputs."""
     out_dir = Path(config.output_directory)
     out_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = out_dir / "aggregate_results.csv"
 
     results: list[BenchmarkRunResult] = []
     reps = max(1, config.repetitions)
@@ -187,9 +188,7 @@ def run_and_save(config: ExperimentConfig) -> list[BenchmarkRunResult]:
         result = run_single_benchmark(config, run_index=run_index)
         json_path = out_dir / f"{result.run_id}.json"
         save_run_result_json(result, json_path)
+        append_results_csv([result], csv_path)
         results.append(result)
-
-    csv_path = out_dir / "aggregate_results.csv"
-    append_results_csv(results, csv_path)
 
     return results

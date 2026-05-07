@@ -66,8 +66,8 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument(
         "--backend",
         default="auto",
-        choices=["auto", "native", "fallback"],
-        help="Backend selection strategy",
+        choices=["auto", "native", "python", "fallback"],
+        help="Backend selection strategy; fallback is a backward-compatible alias for python",
     )
     build.add_argument(
         "--deduplicate",

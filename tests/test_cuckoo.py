@@ -24,3 +24,35 @@ def test_cuckoo_stats_target_fpr_matches_bucket_aware_formula() -> None:
     expected = (2 * 4) / (2**12)
     assert abs(stats["target_false_positive_rate"] - expected) < 1e-12
     assert abs(stats["fingerprint_only_false_positive_rate"] - (2**-12)) < 1e-12
+
+
+def test_cuckoo_normalizes_dna_case() -> None:
+    cf = CuckooFilter(capacity=8, bucket_size=2, fingerprint_bits=8)
+    cf.build(["ACGTAC"])
+
+    assert cf.contains("acgtac")
+    assert cf.delete("acgtac")
+
+
+def test_cuckoo_failed_insert_rolls_back_evictions() -> None:
+    cf = CuckooFilter(
+        capacity=1,
+        bucket_size=1,
+        fingerprint_bits=8,
+        max_relocations=1,
+        random_seed=0,
+    )
+
+    inserted = 0
+    for i in range(100):
+        before = [bucket.copy() for bucket in cf._buckets]
+        ok = cf.insert(f"KEY{i}")
+        if ok:
+            inserted += 1
+            continue
+
+        assert inserted > 0
+        assert cf._buckets == before
+        break
+    else:
+        raise AssertionError("Expected tiny Cuckoo filter to reject an insertion")

@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 32.55900209915126,
+  "build_time_seconds": 144.41541145800147,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 30900.072768696646,
+    "repeated_qps": 31921.69966285916,
+    "sequential_qps": 31171.019909394392
+  },
+  "dataset_name": "borreliella_burgdorferi_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 1527455,
+    "build_time_seconds": 144.00347037499887,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 1356486,
+    "model_eval": {
+      "accuracy": 0.5314882072805729,
+      "avg_precision": 0.7345936896768411,
+      "false_positive_rate": 0.009452426384385593,
+      "model_false_negative_count": 1261175.0,
+      "model_false_negative_rate": 0.9297368347332741,
+      "model_fnr": 0.9293343115868882,
+      "model_fpr": 0.009452426384385593,
+      "roc_auc": 0.7487317731766006,
+      "selected_threshold": 0.8216280484333596,
+      "target_model_fpr": 0.01,
+      "threshold": 0.8216280484333596,
+      "true_positive_rate": 0.07066568841311188,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.01,
+      "k": 31,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 0.8216280484333596,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.0199,
+  "filter_params": {
+    "backup_false_positive_rate": 0.01,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 1356486,
+  "k": 31,
+  "memory_per_kmer_bytes": 1.1260381603643532,
+  "memory_usage_bytes": 1527455,
+  "p50_latency_us": 32.55900209915126,
+  "p95_latency_us": 32.55900209915126,
+  "p99_latency_us": 32.55900209915126,
+  "run_id": "learned_borreliella_burgdorferi_k31_k31_f65d2a8089_run0",
+  "throughput_qps": 30713.4720208783,
+  "true_positive_rate": 1.0
+}

@@ -1,0 +1,20 @@
+GCF_000005845.2  Escherichia coli str. K-12 substr. MG1655                         ASM584v2    4641652  51
+GCF_000006745.1  Vibrio cholerae O1 biovar El Tor str. N16961                      ASM674v1    4033464  47.5
+GCF_000006765.1  Pseudomonas aeruginosa PAO1                                       ASM676v1    6264404  66.5
+GCF_000006885.1  Streptococcus pneumoniae TIGR4                                    ASM688v1    2160842  39.5
+GCF_000006945.2  Salmonella enterica subsp. enterica serovar Typhimurium str. LT2  ASM694v2    4951383  52
+GCF_000008525.1  Helicobacter pylori 26695                                         ASM852v1    1667867  39
+GCF_000008545.1  Thermotoga maritima MSB8                                          ASM854v1    1860725  46
+GCF_000008565.1  Deinococcus radiodurans R1 = ATCC 13939 = DSM 20539               ASM856v1    3284156  66.5
+GCF_000008625.1  Aquifex aeolicus VF5                                              ASM862v1    1590791  43.5
+GCF_000008685.2  Borreliella burgdorferi B31                                       ASM868v2    1521208  28
+GCF_000008725.1  Chlamydia trachomatis D/UW-3/CX                                   ASM872v1    1042519  41.5
+GCF_000009045.1  Bacillus subtilis subsp. subtilis str. 168                        ASM904v1    4215606  43.5
+GCF_000009065.1  Yersinia pestis CO92                                              ASM906v1    4829855  47.5
+GCF_000009085.1  Campylobacter jejuni subsp. jejuni NCTC 11168 = ATCC 700819       ASM908v1    1641481  30.5
+GCF_000009205.2  Clostridioides difficile 630                                      ASM920v2    4298133  29
+GCF_000025985.1  Bacteroides fragilis NCTC 9343                                    ASM2598v1   5241700  43
+GCF_000027305.1  Haemophilus influenzae Rd KW20                                    ASM2730v1   1830138  38
+GCF_000146165.2  Shewanella oneidensis MR-1                                        ASM14616v2  5131424  46
+GCF_000195955.2  Mycobacterium tuberculosis H37Rv                                  ASM19595v2  4411532  65.5
+GCF_000196035.1  Listeria monocytogenes EGD-e                                      ASM19603v1  2944528  38

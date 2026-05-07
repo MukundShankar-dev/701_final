@@ -1,0 +1,42 @@
+{
+  "avg_latency_us": 4.039822900813306,
+  "build_time_seconds": 19.038451959000668,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 177718.3614052591,
+    "repeated_qps": 307785.42632111296,
+    "sequential_qps": 290953.0590330918
+  },
+  "dataset_name": "ecoli_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 5759563,
+    "build_time_seconds": 19.03844991698861,
+    "built": true,
+    "filter_name": "xor",
+    "inserted_keys": 4562542,
+    "note": "fallback backend uses static Bloom and is not a true XOR filter; use native backend for publication-quality XOR comparisons",
+    "parameters": {
+      "backend": "fallback:static_bloom",
+      "fingerprint_bits": 7,
+      "requested_backend": "auto"
+    },
+    "target_false_positive_rate": 0.0078125
+  },
+  "false_positive_rate": 0.0086,
+  "filter_params": {
+    "backend": "auto",
+    "false_positive_rate": 0.01,
+    "fingerprint_bits": 7
+  },
+  "filter_type": "xor",
+  "inserted_keys": 4562542,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.2623583519888693,
+  "memory_usage_bytes": 5759563,
+  "p50_latency_us": 4.039822900813306,
+  "p95_latency_us": 4.039822900813306,
+  "p99_latency_us": 4.039822900813306,
+  "run_id": "xor_ecoli_k21_k21_7ebad1e11a_run0",
+  "throughput_qps": 247535.6035529869,
+  "true_positive_rate": 1.0
+}

@@ -1,0 +1,47 @@
+{
+  "avg_latency_us": 4.106587498972658,
+  "build_time_seconds": 37.8565192919923,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 268075.55256313324,
+    "repeated_qps": 269778.10749722196,
+    "sequential_qps": 266150.73175821983
+  },
+  "dataset_name": "bacillus_subtilis_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 6407944,
+    "build_time_seconds": 36.5021867500036,
+    "built": true,
+    "filter_name": "xor",
+    "inserted_keys": 4167768,
+    "note": "pure-Python peel-based XOR backend active",
+    "parameters": {
+      "array_length": 5126355,
+      "backend": "python:xor",
+      "build_attempts": 1,
+      "fingerprint_bits": 10,
+      "hash_seed": 7,
+      "requested_backend": "auto",
+      "size_factor": 1.23
+    },
+    "target_false_positive_rate": 0.0009765625
+  },
+  "false_positive_rate": 0.0007,
+  "filter_params": {
+    "backend": "auto",
+    "false_positive_rate": 0.001,
+    "fingerprint_bits": 10,
+    "hash_seed": 7
+  },
+  "filter_type": "xor",
+  "inserted_keys": 4167768,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.537500167955606,
+  "memory_usage_bytes": 6407944,
+  "p50_latency_us": 4.106587498972658,
+  "p95_latency_us": 4.106587498972658,
+  "p99_latency_us": 4.106587498972658,
+  "run_id": "xor_bacillus_subtilis_k21_k21_278801f348_run0",
+  "throughput_qps": 243511.18787805428,
+  "true_positive_rate": 1.0
+}

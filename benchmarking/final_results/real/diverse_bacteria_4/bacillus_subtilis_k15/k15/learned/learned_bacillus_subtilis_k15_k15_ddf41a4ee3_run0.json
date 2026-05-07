@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 17.95806665031705,
+  "build_time_seconds": 239.61173625002266,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 58092.081757519416,
+    "repeated_qps": 60998.8354366117,
+    "sequential_qps": 58207.1704918504
+  },
+  "dataset_name": "bacillus_subtilis_k15",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 7443337,
+    "build_time_seconds": 238.17705875000684,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 4132511,
+    "model_eval": {
+      "accuracy": 0.49946158629985166,
+      "avg_precision": 0.6234580873320013,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 4132508.0,
+      "model_false_negative_rate": 0.9999992740491193,
+      "model_fnr": 0.999998388513323,
+      "model_fpr": 0.0,
+      "roc_auc": 0.6395409422628784,
+      "selected_threshold": 0.831598918385291,
+      "target_model_fpr": 0.001,
+      "threshold": 0.831598918385291,
+      "true_positive_rate": 1.6114866770338976e-06,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.001,
+      "k": 15,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 0.831598918385291,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.001
+  },
+  "false_positive_rate": 0.0008,
+  "filter_params": {
+    "backup_false_positive_rate": 0.001,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 4132511,
+  "k": 15,
+  "memory_per_kmer_bytes": 1.8011656835275212,
+  "memory_usage_bytes": 7443337,
+  "p50_latency_us": 17.95806665031705,
+  "p95_latency_us": 17.95806665031705,
+  "p99_latency_us": 17.95806665031705,
+  "run_id": "learned_bacillus_subtilis_k15_k15_ddf41a4ee3_run0",
+  "throughput_qps": 55685.28168829048,
+  "true_positive_rate": 1.0
+}

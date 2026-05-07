@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 19.527010348974727,
+  "build_time_seconds": 354.61222066698247,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 55966.04243965329,
+    "repeated_qps": 57863.40332232757,
+    "sequential_qps": 54981.92788675766
+  },
+  "dataset_name": "pseudomonas_aeruginosa_k15",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 13836133,
+    "build_time_seconds": 352.65162804099964,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 5767198,
+    "model_eval": {
+      "accuracy": 0.4999829495439436,
+      "avg_precision": 0.7074209984259279,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 5767198.0,
+      "model_false_negative_rate": 1.0,
+      "model_fnr": 1.0,
+      "model_fpr": 0.0,
+      "roc_auc": 0.722226896798573,
+      "selected_threshold": 1.0,
+      "target_model_fpr": 0.0001,
+      "threshold": 1.0,
+      "true_positive_rate": 0.0,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.0001,
+      "k": 15,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 1.0,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.0001
+  },
+  "false_positive_rate": 0.0001,
+  "filter_params": {
+    "backup_false_positive_rate": 0.0001,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 5767198,
+  "k": 15,
+  "memory_per_kmer_bytes": 2.3991083711708874,
+  "memory_usage_bytes": 13836133,
+  "p50_latency_us": 19.527010348974727,
+  "p95_latency_us": 19.527010348974727,
+  "p99_latency_us": 19.527010348974727,
+  "run_id": "learned_pseudomonas_aeruginosa_k15_k15_ac13309b22_run0",
+  "throughput_qps": 51211.11640382294,
+  "true_positive_rate": 1.0
+}

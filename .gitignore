@@ -16,12 +16,37 @@ htmlcov/
 # macOS/editor files
 .DS_Store
 
-# Generated real genome inputs and derived k-mer datasets
-data/raw/
-data/datasets/real/
+# Generated real genome inputs and derived k-mer datasets.
+# Keep only tiny metadata/provenance files needed to understand/regenerate plots.
+data/raw/**
+!data/raw/
+!data/raw/diverse_bacteria_20/
+!data/raw/diverse_bacteria_20/metadata_table.txt
+!data/raw/diverse_bacteria_20/ncbi_dataset/
+!data/raw/diverse_bacteria_20/ncbi_dataset/data/
+!data/raw/diverse_bacteria_20/ncbi_dataset/data/assembly_data_report.jsonl
+!data/raw/diverse_bacteria_20/ncbi_dataset/data/dataset_catalog.json
+
+data/datasets/real/**
+!data/datasets/real/
+!data/datasets/real/diverse_bacteria_4/
+!data/datasets/real/diverse_bacteria_4/k15/
+!data/datasets/real/diverse_bacteria_4/k15/manifest.tsv
+!data/datasets/real/diverse_bacteria_4/k21/
+!data/datasets/real/diverse_bacteria_4/k21/manifest.tsv
+!data/datasets/real/diverse_bacteria_4/k31/
+!data/datasets/real/diverse_bacteria_4/k31/manifest.tsv
+
+# Large bioinformatics artifacts
+*.jf
+*.fna
+*.fa
+*.fasta
+**/counts.tsv
+**/kmers.txt
 
 # Generated final benchmark outputs
-benchmarking/final_results/
+#benchmarking/final_results/
 
 # Local scratch artifacts
 *.log

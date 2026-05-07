@@ -72,9 +72,13 @@ class _PythonXorBackend:
         self._build_attempts = 0
         self._effective_size_factor = size_factor
 
+    @staticmethod
+    def _normalize_key(key: str) -> str:
+        return key.upper()
+
     def _hash_key(self, key: str, seed: int | None = None) -> int:
         build_seed = self._build_seed if seed is None else seed
-        payload = f"{build_seed}:{key}".encode("utf-8")
+        payload = f"{build_seed}:{self._normalize_key(key)}".encode("utf-8")
         return int.from_bytes(hashlib.blake2b(payload, digest_size=8).digest(), "little")
 
     def _fingerprint_from_hash(self, key_hash: int) -> int:
@@ -160,7 +164,7 @@ class _PythonXorBackend:
         return fingerprints, locations, stack
 
     def build(self, keys: Sequence[str]) -> None:
-        unique_keys = list(dict.fromkeys(keys))
+        unique_keys = list(dict.fromkeys(self._normalize_key(key) for key in keys))
         if not unique_keys:
             raise ValueError("keys must be non-empty")
 
@@ -253,6 +257,11 @@ class XorFilter(AMQFilter):
         size_factor: float = 1.23,
         max_retries: int = 64,
     ) -> None:
+        if backend not in {"auto", "native", "python", "fallback"}:
+            raise ValueError(
+                "backend must be one of 'auto', 'native', 'python', or "
+                f"'fallback', got {backend!r}"
+            )
         self.fingerprint_bits = fingerprint_bits
         self.requested_backend = backend
         self.hash_seed = hash_seed
@@ -318,7 +327,7 @@ class XorFilter(AMQFilter):
 
     def build(self, keys: Sequence[str]) -> None:
         """Build or rebuild the static filter from keys."""
-        unique_keys = list(dict.fromkeys(keys))
+        unique_keys = list(dict.fromkeys(key.upper() for key in keys))
         if not unique_keys:
             raise ValueError("keys must be non-empty")
 
@@ -332,8 +341,10 @@ class XorFilter(AMQFilter):
             if not built_native:
                 raise RuntimeError(
                     "No compatible native XOR backend found. "
-                    "Install and configure a supported package or use backend='fallback'."
+                    "Install and configure a supported package or use backend='python'."
                 )
+        elif self.requested_backend in {"python", "fallback"}:
+            built_native = False
 
         if not built_native:
             self._python_backend = _PythonXorBackend(

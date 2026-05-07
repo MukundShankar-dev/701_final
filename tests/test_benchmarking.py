@@ -1,3 +1,4 @@
+import csv
 from pathlib import Path
 
 from benchmarking.benchmark_runner import run_and_save, run_single_benchmark
@@ -70,3 +71,32 @@ def test_run_ids_do_not_overwrite_across_param_sweeps(tmp_path: Path) -> None:
     json_files = sorted(out_dir.glob("*.json"))
     # Two separate parameter configurations should produce two JSON artifacts.
     assert len(json_files) == 2
+
+
+def test_run_and_save_does_not_duplicate_aggregate_rows(tmp_path: Path) -> None:
+    keys = ["ACGTAC", "CGTACG", "TTTTTT", "AAAAAA", "CCCCCC", "GGGGGG"]
+    data_path = tmp_path / "tiny.kmers"
+    save_kmers(data_path, keys)
+
+    out_dir = tmp_path / "out"
+    cfg = ExperimentConfig(
+        dataset_name="tiny",
+        dataset_path=str(data_path),
+        k=6,
+        canonicalize=False,
+        filter_type="bloom",
+        filter_params={"false_positive_rate": 1e-3},
+        positive_query_count=8,
+        negative_query_count=8,
+        random_seed=0,
+        output_directory=str(out_dir),
+        repetitions=1,
+    )
+
+    run_and_save(cfg)
+    run_and_save(cfg)
+
+    with (out_dir / "aggregate_results.csv").open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    assert len(rows) == 1

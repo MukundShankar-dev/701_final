@@ -1,0 +1,56 @@
+{
+  "avg_latency_us": 14.890068750537466,
+  "build_time_seconds": 733.2220694580028,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 74095.09842437324,
+    "repeated_qps": 76965.52281843296,
+    "sequential_qps": 73809.04493237929
+  },
+  "dataset_name": "ecoli_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 8200516,
+    "build_time_seconds": 731.3256102909945,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 4562542,
+    "model_eval": {
+      "accuracy": 0.4997789975328088,
+      "avg_precision": 0.5731708336320258,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 4562539.0,
+      "model_false_negative_rate": 0.9999993424718063,
+      "model_fnr": 0.9999985394743568,
+      "model_fpr": 0.0,
+      "roc_auc": 0.5891205677984649,
+      "selected_threshold": 0.792144078739071,
+      "target_model_fpr": 0.001,
+      "threshold": 0.792144078739071,
+      "true_positive_rate": 1.4605256431789802e-06,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.001,
+      "k": 21,
+      "model_threshold": 0.792144078739071
+    },
+    "target_false_positive_rate": 0.001
+  },
+  "false_positive_rate": 0.001,
+  "filter_params": {
+    "backup_false_positive_rate": 0.001,
+    "model_threshold": 0.5
+  },
+  "filter_type": "learned",
+  "inserted_keys": 4562542,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.7973568243316993,
+  "memory_usage_bytes": 8200516,
+  "p50_latency_us": 14.890068750537466,
+  "p95_latency_us": 14.890068750537466,
+  "p99_latency_us": 14.890068750537466,
+  "run_id": "learned_ecoli_k21_k21_a0d8f21c39_run0",
+  "throughput_qps": 67158.85713851418,
+  "true_positive_rate": 1.0
+}
