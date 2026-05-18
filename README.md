@@ -14,7 +14,7 @@ The main benchmark metrics are memory per inserted k-mer, empirical false positi
 Use Python 3.10+ from the project environment:
 
 ```bash
-cd "/Users/mukunds/Desktop/UMD MS/Spr26/CMSC701/701_final"
+cd "701_final"
 
 python -m pip install -r requirements.txt
 ```
