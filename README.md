@@ -310,20 +310,3 @@ python scripts/build_all.py \
 ```
 
 This writes serialized filter artifacts and prints a JSON summary.
-
-## Final Report Draft
-
-The current writeup draft is:
-
-```text
-writeup.md
-```
-
-It contains methodology, dataset construction, filter implementation details, synthetic results, real-data results, and learned-filter analysis.
-
-## Important Notes
-
-- Use `--overwrite` only when you intentionally want to replace an output directory.
-- Real learned-filter runs are slow. Most runtime is model feature extraction/training, not the Bloom backup.
-- The final real-data plots should be generated with `--only-reference-fpr` so old non-reference JSONs do not affect the figures.
-- If Matplotlib complains about cache directories, the plotting scripts set a temporary writable cache automatically.
