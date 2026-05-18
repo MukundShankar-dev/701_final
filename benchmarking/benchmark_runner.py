@@ -50,6 +50,9 @@ def _make_filter(config: ExperimentConfig) -> Any:
         return XorFilter(
             fingerprint_bits=int(params.get("fingerprint_bits", 8)),
             backend=str(params.get("backend", "auto")),
+            hash_seed=int(params.get("hash_seed", config.random_seed)),
+            size_factor=float(params.get("size_factor", 1.23)),
+            max_retries=int(params.get("max_retries", 64)),
         )
 
     if filter_type == "learned":
@@ -58,6 +61,29 @@ def _make_filter(config: ExperimentConfig) -> Any:
             model_threshold=float(params.get("model_threshold", 0.5)),
             backup_false_positive_rate=float(params.get("backup_false_positive_rate", 1e-3)),
             random_seed=int(params.get("random_seed", config.random_seed)),
+            model_backend=str(params.get("model_backend", "ngram_sgd")),
+            ngram_features=int(params.get("ngram_features", 4096)),
+            ngram_range=tuple(params.get("ngram_range", (3, 5))),
+            total_false_positive_rate=(
+                float(params["total_false_positive_rate"])
+                if "total_false_positive_rate" in params
+                else None
+            ),
+            model_false_positive_rate=(
+                float(params["model_false_positive_rate"])
+                if "model_false_positive_rate" in params
+                else None
+            ),
+            prefilter_false_positive_rate=(
+                float(params["prefilter_false_positive_rate"])
+                if "prefilter_false_positive_rate" in params
+                else None
+            ),
+            refit_model_on_full_dataset=(
+                bool(params["refit_model_on_full_dataset"])
+                if "refit_model_on_full_dataset" in params
+                else None
+            ),
         )
 
     raise ValueError(f"Unsupported filter type: {config.filter_type}")
@@ -102,6 +128,10 @@ def run_single_benchmark(config: ExperimentConfig, *, run_index: int = 0) -> Ben
         queries.negatives,
         repetitions=max(1, config.repetitions),
     )
+
+    reset_query_counters = getattr(filt, "reset_query_counters", None)
+    if callable(reset_query_counters):
+        reset_query_counters()
 
     pos_preds = filt.batch_contains(queries.positives)
     neg_preds = filt.batch_contains(queries.negatives)
@@ -174,6 +204,7 @@ def run_and_save(config: ExperimentConfig) -> list[BenchmarkRunResult]:
     """Run benchmark repetitions and persist JSON + aggregate CSV outputs."""
     out_dir = Path(config.output_directory)
     out_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = out_dir / "aggregate_results.csv"
 
     results: list[BenchmarkRunResult] = []
     reps = max(1, config.repetitions)
@@ -181,9 +212,7 @@ def run_and_save(config: ExperimentConfig) -> list[BenchmarkRunResult]:
         result = run_single_benchmark(config, run_index=run_index)
         json_path = out_dir / f"{result.run_id}.json"
         save_run_result_json(result, json_path)
+        append_results_csv([result], csv_path)
         results.append(result)
-
-    csv_path = out_dir / "aggregate_results.csv"
-    append_results_csv(results, csv_path)
 
     return results

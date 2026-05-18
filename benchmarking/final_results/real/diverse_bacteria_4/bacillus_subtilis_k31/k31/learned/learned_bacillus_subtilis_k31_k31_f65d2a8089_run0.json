@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 34.681043749151286,
+  "build_time_seconds": 477.0249420829932,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 29286.638519821325,
+    "repeated_qps": 29984.765219944944,
+    "sequential_qps": 29395.25869133879
+  },
+  "dataset_name": "bacillus_subtilis_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 4764850,
+    "build_time_seconds": 475.6962223330047,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 4170526,
+    "model_eval": {
+      "accuracy": 0.5194411896818787,
+      "avg_precision": 0.6822300409245583,
+      "false_positive_rate": 0.009970743948734692,
+      "model_false_negative_count": 3963210.0,
+      "model_false_negative_rate": 0.950290203202186,
+      "model_fnr": 0.9500183609279453,
+      "model_fpr": 0.009970743948734692,
+      "roc_auc": 0.696169041778286,
+      "selected_threshold": 0.7822130736914353,
+      "target_model_fpr": 0.01,
+      "threshold": 0.7822130736914353,
+      "true_positive_rate": 0.04998163907205467,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.01,
+      "k": 31,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 0.7822130736914353,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.0203,
+  "filter_params": {
+    "backup_false_positive_rate": 0.01,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 4170526,
+  "k": 31,
+  "memory_per_kmer_bytes": 1.1425057654598005,
+  "memory_usage_bytes": 4764850,
+  "p50_latency_us": 34.681043749151286,
+  "p95_latency_us": 34.681043749151286,
+  "p99_latency_us": 34.681043749151286,
+  "run_id": "learned_bacillus_subtilis_k31_k31_f65d2a8089_run0",
+  "throughput_qps": 28834.195626666282,
+  "true_positive_rate": 1.0
+}

@@ -1,0 +1,48 @@
+{
+  "avg_latency_us": 2.9625479539390653,
+  "build_time_seconds": 18.263668500003405,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 358151.58386301604,
+    "repeated_qps": 455983.65427884884,
+    "sequential_qps": 359217.97342262446
+  },
+  "dataset_name": "pseudomonas_aeruginosa_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 13631488,
+    "build_time_seconds": 17.99579650000669,
+    "built": true,
+    "filter_name": "cuckoo",
+    "fingerprint_only_false_positive_rate": 0.0001220703125,
+    "inserted_keys": 6212635,
+    "insertion_failures": 0,
+    "load_factor": 0.7406038045883179,
+    "parameters": {
+      "bucket_count": 2097152,
+      "bucket_size": 4,
+      "capacity": 6212635,
+      "fingerprint_bits": 13,
+      "max_relocations": 500,
+      "random_seed": 7
+    },
+    "target_false_positive_rate": 0.0009765625
+  },
+  "false_positive_rate": 0.0008,
+  "filter_params": {
+    "bucket_size": 4,
+    "capacity": 6212635,
+    "false_positive_rate": 0.001,
+    "fingerprint_bits": 13
+  },
+  "filter_type": "cuckoo",
+  "inserted_keys": 6212635,
+  "k": 21,
+  "memory_per_kmer_bytes": 2.194155619958359,
+  "memory_usage_bytes": 13631488,
+  "p50_latency_us": 2.9625479539390653,
+  "p95_latency_us": 2.9625479539390653,
+  "p99_latency_us": 2.9625479539390653,
+  "run_id": "cuckoo_pseudomonas_aeruginosa_k21_k21_15ead27966_run0",
+  "throughput_qps": 337547.27874375135,
+  "true_positive_rate": 1.0
+}

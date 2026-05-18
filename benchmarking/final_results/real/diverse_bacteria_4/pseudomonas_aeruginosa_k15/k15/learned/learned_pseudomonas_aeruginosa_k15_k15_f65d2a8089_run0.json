@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 17.317324951000046,
+  "build_time_seconds": 331.1357439160056,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 59527.59897388468,
+    "repeated_qps": 62683.752455036854,
+    "sequential_qps": 59394.10105375955
+  },
+  "dataset_name": "pseudomonas_aeruginosa_k15",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 6567613,
+    "build_time_seconds": 329.1249958749977,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 5767198,
+    "model_eval": {
+      "accuracy": 0.5217318177115514,
+      "avg_precision": 0.7077034771318382,
+      "false_positive_rate": 0.008251546153401538,
+      "model_false_negative_count": 5467854.0,
+      "model_false_negative_rate": 0.948095418260306,
+      "model_fnr": 0.9482527635245963,
+      "model_fpr": 0.008251546153401538,
+      "roc_auc": 0.7224192797529808,
+      "selected_threshold": 0.7806782461835311,
+      "target_model_fpr": 0.01,
+      "threshold": 0.7806782461835311,
+      "true_positive_rate": 0.05174723647540368,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.01,
+      "k": 15,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 0.7806782461835311,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.0199,
+  "filter_params": {
+    "backup_false_positive_rate": 0.01,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 5767198,
+  "k": 15,
+  "memory_per_kmer_bytes": 1.1387875013134627,
+  "memory_usage_bytes": 6567613,
+  "p50_latency_us": 17.317324951000046,
+  "p95_latency_us": 17.317324951000046,
+  "p99_latency_us": 17.317324951000046,
+  "run_id": "learned_pseudomonas_aeruginosa_k15_k15_f65d2a8089_run0",
+  "throughput_qps": 57745.63928490882,
+  "true_positive_rate": 1.0
+}

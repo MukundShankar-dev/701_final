@@ -16,6 +16,9 @@ def _build_command(args: argparse.Namespace) -> None:
         kmer_file=args.kmer_file,
         fingerprint_bits=args.fingerprint_bits,
         backend=args.backend,
+        hash_seed=args.seed,
+        size_factor=args.size_factor,
+        max_retries=args.max_retries,
         deduplicate=args.deduplicate,
     )
     filt.save(args.output)
@@ -57,11 +60,14 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--kmer-file", required=True, help="Path to one-k-mer-per-line file")
     build.add_argument("--output", required=True, help="Output XOR artifact JSON path")
     build.add_argument("--fingerprint-bits", type=int, default=8, help="Fingerprint size in bits")
+    build.add_argument("--seed", type=int, default=0, help="Hash seed")
+    build.add_argument("--size-factor", type=float, default=1.23, help="XOR array size factor")
+    build.add_argument("--max-retries", type=int, default=64, help="Maximum peel retries")
     build.add_argument(
         "--backend",
         default="auto",
-        choices=["auto", "native", "fallback"],
-        help="Backend selection strategy",
+        choices=["auto", "native", "python", "fallback"],
+        help="Backend selection strategy; fallback is a backward-compatible alias for python",
     )
     build.add_argument(
         "--deduplicate",

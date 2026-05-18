@@ -1,0 +1,73 @@
+{
+  "avg_latency_us": 17.38353129476309,
+  "build_time_seconds": 74.22937062499113,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 61150.37104877825,
+    "repeated_qps": 65030.56980150997,
+    "sequential_qps": 60625.95278045017
+  },
+  "dataset_name": "borreliella_burgdorferi_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 2419514,
+    "build_time_seconds": 74.12083754199557,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "has_prefilter": false,
+    "inserted_keys": 1337144,
+    "model_eval": {
+      "accuracy": 0.5003452634098065,
+      "avg_precision": 0.6924152077582386,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 1337144.0,
+      "model_false_negative_rate": 1.0,
+      "model_fnr": 1.0,
+      "model_fpr": 0.0,
+      "roc_auc": 0.7097448546466776,
+      "selected_threshold": 1.0,
+      "target_model_fpr": 0.001,
+      "threshold": 1.0,
+      "true_positive_rate": 0.0,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.001,
+      "k": 21,
+      "model_backend": "ngram_sgd",
+      "model_false_positive_rate": 0.001,
+      "model_threshold": 1.0,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.001
+    },
+    "target_false_positive_rate": 0.001
+  },
+  "false_positive_rate": 0.0009,
+  "filter_params": {
+    "backup_false_positive_rate": 0.001,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 1337144,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.8094640517401268,
+  "memory_usage_bytes": 2419514,
+  "p50_latency_us": 17.38353129476309,
+  "p95_latency_us": 17.38353129476309,
+  "p99_latency_us": 17.38353129476309,
+  "run_id": "learned_borreliella_burgdorferi_k21_k21_ddf41a4ee3_run0",
+  "throughput_qps": 57525.711148301445,
+  "true_positive_rate": 1.0
+}

@@ -1,0 +1,43 @@
+{
+  "avg_latency_us": 3.2830437005031854,
+  "build_time_seconds": 5.764328915975057,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 360706.6211691171,
+    "repeated_qps": 427670.77922909654,
+    "sequential_qps": 356234.6039125424
+  },
+  "dataset_name": "borreliella_burgdorferi_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 2403114,
+    "bits_per_item": 14.37758760462598,
+    "build_time_seconds": 5.764147749985568,
+    "built": true,
+    "filter_name": "bloom",
+    "inserted_keys": 1337144,
+    "parameters": {
+      "expected_items": 1337144,
+      "false_positive_rate": 0.001,
+      "hash_seed": 7,
+      "num_bits": 19224905,
+      "num_hashes": 10
+    },
+    "target_false_positive_rate": 0.001
+  },
+  "false_positive_rate": 0.0014,
+  "filter_params": {
+    "expected_items": 1337144,
+    "false_positive_rate": 0.001
+  },
+  "filter_type": "bloom",
+  "inserted_keys": 1337144,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.79719910495803,
+  "memory_usage_bytes": 2403114,
+  "p50_latency_us": 3.2830437005031854,
+  "p95_latency_us": 3.2830437005031854,
+  "p99_latency_us": 3.2830437005031854,
+  "run_id": "bloom_borreliella_burgdorferi_k21_k21_0a5e1b2ba3_run0",
+  "throughput_qps": 304595.3972061755,
+  "true_positive_rate": 1.0
+}

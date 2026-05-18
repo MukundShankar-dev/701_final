@@ -1,0 +1,48 @@
+{
+  "avg_latency_us": 2.901702100643888,
+  "build_time_seconds": 12.997265834012069,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 314105.42477801954,
+    "repeated_qps": 444204.2463160364,
+    "sequential_qps": 306713.9681844428
+  },
+  "dataset_name": "ecoli_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 13631488,
+    "build_time_seconds": 12.741727542015724,
+    "built": true,
+    "filter_name": "cuckoo",
+    "fingerprint_only_false_positive_rate": 0.0001220703125,
+    "inserted_keys": 4570839,
+    "insertion_failures": 0,
+    "load_factor": 0.5448864698410034,
+    "parameters": {
+      "bucket_count": 2097152,
+      "bucket_size": 4,
+      "capacity": 4570839,
+      "fingerprint_bits": 13,
+      "max_relocations": 500,
+      "random_seed": 7
+    },
+    "target_false_positive_rate": 0.0009765625
+  },
+  "false_positive_rate": 0.0007,
+  "filter_params": {
+    "bucket_size": 4,
+    "capacity": 4570839,
+    "false_positive_rate": 0.001,
+    "fingerprint_bits": 13
+  },
+  "filter_type": "cuckoo",
+  "inserted_keys": 4570839,
+  "k": 31,
+  "memory_per_kmer_bytes": 2.982272619971957,
+  "memory_usage_bytes": 13631488,
+  "p50_latency_us": 2.901702100643888,
+  "p95_latency_us": 2.901702100643888,
+  "p99_latency_us": 2.901702100643888,
+  "run_id": "cuckoo_ecoli_k31_k31_e4d7ea6e69_run0",
+  "throughput_qps": 344625.3148378325,
+  "true_positive_rate": 1.0
+}

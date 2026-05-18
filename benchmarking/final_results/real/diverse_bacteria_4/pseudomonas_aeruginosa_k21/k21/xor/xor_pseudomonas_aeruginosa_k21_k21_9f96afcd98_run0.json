@@ -1,0 +1,47 @@
+{
+  "avg_latency_us": 4.214552047778852,
+  "build_time_seconds": 58.597442083002534,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 263764.4698245706,
+    "repeated_qps": 269291.7610219315,
+    "sequential_qps": 263201.3782836625
+  },
+  "dataset_name": "pseudomonas_aeruginosa_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 13372699,
+    "build_time_seconds": 56.31624937499873,
+    "built": true,
+    "filter_name": "xor",
+    "inserted_keys": 6212635,
+    "note": "pure-Python peel-based XOR backend active",
+    "parameters": {
+      "array_length": 7641542,
+      "backend": "python:xor",
+      "build_attempts": 1,
+      "fingerprint_bits": 14,
+      "hash_seed": 7,
+      "requested_backend": "auto",
+      "size_factor": 1.23
+    },
+    "target_false_positive_rate": 6.103515625e-05
+  },
+  "false_positive_rate": 0.0,
+  "filter_params": {
+    "backend": "auto",
+    "false_positive_rate": 0.0001,
+    "fingerprint_bits": 14,
+    "hash_seed": 7
+  },
+  "filter_type": "xor",
+  "inserted_keys": 6212635,
+  "k": 21,
+  "memory_per_kmer_bytes": 2.1525003480809675,
+  "memory_usage_bytes": 13372699,
+  "p50_latency_us": 4.214552047778852,
+  "p95_latency_us": 4.214552047778852,
+  "p99_latency_us": 4.214552047778852,
+  "run_id": "xor_pseudomonas_aeruginosa_k21_k21_9f96afcd98_run0",
+  "throughput_qps": 237273.14045795656,
+  "true_positive_rate": 1.0
+}

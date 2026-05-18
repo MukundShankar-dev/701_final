@@ -1,0 +1,47 @@
+{
+  "avg_latency_us": 3.3467499481048435,
+  "build_time_seconds": 11.048607917036861,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 310521.2362644157,
+    "repeated_qps": 344669.1171342879,
+    "sequential_qps": 332281.7202065521
+  },
+  "dataset_name": "borreliella_burgdorferi_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 2055860,
+    "build_time_seconds": 10.754886167007498,
+    "built": true,
+    "filter_name": "xor",
+    "inserted_keys": 1337144,
+    "note": "pure-Python peel-based XOR backend active",
+    "parameters": {
+      "array_length": 1644688,
+      "backend": "python:xor",
+      "build_attempts": 1,
+      "fingerprint_bits": 10,
+      "hash_seed": 7,
+      "requested_backend": "auto",
+      "size_factor": 1.23
+    },
+    "target_false_positive_rate": 0.0009765625
+  },
+  "false_positive_rate": 0.0008,
+  "filter_params": {
+    "backend": "auto",
+    "false_positive_rate": 0.001,
+    "fingerprint_bits": 10,
+    "hash_seed": 7
+  },
+  "filter_type": "xor",
+  "inserted_keys": 1337144,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.5375008226488696,
+  "memory_usage_bytes": 2055860,
+  "p50_latency_us": 3.3467499481048435,
+  "p95_latency_us": 3.3467499481048435,
+  "p99_latency_us": 3.3467499481048435,
+  "run_id": "xor_borreliella_burgdorferi_k21_k21_278801f348_run0",
+  "throughput_qps": 298797.34533685964,
+  "true_positive_rate": 1.0
+}

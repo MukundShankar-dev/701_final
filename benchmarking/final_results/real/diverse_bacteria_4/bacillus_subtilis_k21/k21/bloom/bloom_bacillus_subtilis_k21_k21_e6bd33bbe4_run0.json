@@ -1,0 +1,43 @@
+{
+  "avg_latency_us": 5.059077100304421,
+  "build_time_seconds": 25.825179915991612,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 245275.38301776146,
+    "repeated_qps": 258947.35178711652,
+    "sequential_qps": 243774.93486267823
+  },
+  "dataset_name": "bacillus_subtilis_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 9987075,
+    "bits_per_item": 19.170116954686538,
+    "build_time_seconds": 25.82302099998924,
+    "built": true,
+    "filter_name": "bloom",
+    "inserted_keys": 4167768,
+    "parameters": {
+      "expected_items": 4167768,
+      "false_positive_rate": 0.0001,
+      "hash_seed": 7,
+      "num_bits": 79896600,
+      "num_hashes": 13
+    },
+    "target_false_positive_rate": 0.0001
+  },
+  "false_positive_rate": 0.0002,
+  "filter_params": {
+    "expected_items": 4167768,
+    "false_positive_rate": 0.0001
+  },
+  "filter_type": "bloom",
+  "inserted_keys": 4167768,
+  "k": 21,
+  "memory_per_kmer_bytes": 2.3962646193358172,
+  "memory_usage_bytes": 9987075,
+  "p50_latency_us": 5.059077100304421,
+  "p95_latency_us": 5.059077100304421,
+  "p99_latency_us": 5.059077100304421,
+  "run_id": "bloom_bacillus_subtilis_k21_k21_e6bd33bbe4_run0",
+  "throughput_qps": 197664.51077407514,
+  "true_positive_rate": 1.0
+}

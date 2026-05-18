@@ -1,0 +1,47 @@
+{
+  "avg_latency_us": 3.4053208481054753,
+  "build_time_seconds": 39.800129291950725,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 290028.33894443215,
+    "repeated_qps": 334615.08780142124,
+    "sequential_qps": 278628.7148675222
+  },
+  "dataset_name": "ecoli_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 7014909,
+    "build_time_seconds": 38.5526456249645,
+    "built": true,
+    "filter_name": "xor",
+    "inserted_keys": 4562542,
+    "note": "pure-Python peel-based XOR backend active",
+    "parameters": {
+      "array_length": 5611927,
+      "backend": "python:xor",
+      "build_attempts": 1,
+      "fingerprint_bits": 10,
+      "hash_seed": 7,
+      "requested_backend": "auto",
+      "size_factor": 1.23
+    },
+    "target_false_positive_rate": 0.0009765625
+  },
+  "false_positive_rate": 0.0015,
+  "filter_params": {
+    "backend": "auto",
+    "false_positive_rate": 0.001,
+    "fingerprint_bits": 10,
+    "hash_seed": 7
+  },
+  "filter_type": "xor",
+  "inserted_keys": 4562542,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.5375001479438435,
+  "memory_usage_bytes": 7014909,
+  "p50_latency_us": 3.4053208481054753,
+  "p95_latency_us": 3.4053208481054753,
+  "p99_latency_us": 3.4053208481054753,
+  "run_id": "xor_ecoli_k21_k21_278801f348_run0",
+  "throughput_qps": 293658.08527450287,
+  "true_positive_rate": 1.0
+}

@@ -1,0 +1,73 @@
+{
+  "avg_latency_us": 23.971012502443045,
+  "build_time_seconds": 366.2627824168885,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 44013.126634958346,
+    "repeated_qps": 46739.60119749185,
+    "sequential_qps": 43700.202925446945
+  },
+  "dataset_name": "ecoli_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 8231105,
+    "build_time_seconds": 365.74914554099087,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "has_prefilter": false,
+    "inserted_keys": 4570839,
+    "model_eval": {
+      "accuracy": 0.4998563356698842,
+      "avg_precision": 0.7053576478564269,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 4570839.0,
+      "model_false_negative_rate": 1.0,
+      "model_fnr": 1.0,
+      "model_fpr": 0.0,
+      "roc_auc": 0.7230287614843202,
+      "selected_threshold": 1.0,
+      "target_model_fpr": 0.001,
+      "threshold": 1.0,
+      "true_positive_rate": 0.0,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.001,
+      "k": 31,
+      "model_backend": "ngram_sgd",
+      "model_false_positive_rate": 0.001,
+      "model_threshold": 1.0,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.001
+    },
+    "target_false_positive_rate": 0.001
+  },
+  "false_positive_rate": 0.0008,
+  "filter_params": {
+    "backup_false_positive_rate": 0.001,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 4570839,
+  "k": 31,
+  "memory_per_kmer_bytes": 1.8007864639292699,
+  "memory_usage_bytes": 8231105,
+  "p50_latency_us": 23.971012502443045,
+  "p95_latency_us": 23.971012502443045,
+  "p99_latency_us": 23.971012502443045,
+  "run_id": "learned_ecoli_k31_k31_ddf41a4ee3_run0",
+  "throughput_qps": 41717.053040545674,
+  "true_positive_rate": 1.0
+}

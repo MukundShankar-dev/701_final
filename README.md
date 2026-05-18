@@ -1,225 +1,329 @@
-# AMQ Benchmarking Framework for Genomic k-mers
+# AMQ Filters for Genomic k-mers
 
-This repository provides a modular, reproducible Python framework for benchmarking approximate membership query (AMQ) structures on genomic k-mer sets.
+This repository implements and benchmarks approximate membership query (AMQ) filters on genomic k-mer sets:
 
-Implemented filter families:
-- Bloom filters
-- Cuckoo filters
-- XOR filter facade (native-backend hook + deterministic Python fallback)
-- Learned filter prototype (classifier + backup Bloom filter)
+- Bloom filter
+- Cuckoo filter
+- XOR filter
+- Learned filter with classifier plus backup Bloom filter
 
-## Project Goals
+The main benchmark metrics are memory per inserted k-mer, empirical false positive rate, query throughput, build time, latency, and cache-proxy throughput.
 
-The framework is designed for reproducible experiments comparing:
-- memory per k-mer
-- empirical false positive rate
-- query speed
-- timing-based cache behavior proxies
+## Setup
 
-It supports genomic-like data workflows including FASTA-based k-mer extraction and synthetic dataset generation.
-
-## Repository Layout
-
-- bloom_filters/: Bloom filter implementation, builder, CLI
-- cuckoo_filters/: Cuckoo filter implementation, builder, CLI
-- xor_filters/: XOR facade, builder, CLI
-- learned_filters/: learned filter prototype and training pipeline
-- data/: FASTA loader, k-mer extraction, synthetic data, I/O helpers
-- benchmarking/: shared interfaces, config, metrics, runner, result serialization
-- scripts/: convenience scripts for data generation, builds, and sweep runs
-- tests/: pytest suite
-
-## macOS Setup (Python 3.11+)
-
-1. Create and activate a virtual environment:
+Use Python 3.10+ from the project environment:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+cd "701_final"
+
+python -m pip install -r requirements.txt
 ```
 
-2. Install dependencies:
+If you are using the course conda environment:
 
 ```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+conda activate 701
 ```
 
-3. Run tests:
+The commands below assume they are run from the repository root.
+
+## Quick Sanity Check
+
+Run tests:
 
 ```bash
-pytest -q
+python -m pytest
 ```
 
-## Quickstart
+Expected result:
 
-### 1) Generate synthetic k-mers
+```text
+14 passed
+```
+
+## Data Layout
+
+Synthetic k-mer files:
+
+```text
+data/datasets/synth_k15.txt
+data/datasets/synth_k21.txt
+data/datasets/synth_k31.txt
+```
+
+Real bacterial datasets:
+
+```text
+data/datasets/real/diverse_bacteria_4/k15/manifest.tsv
+data/datasets/real/diverse_bacteria_4/k21/manifest.tsv
+data/datasets/real/diverse_bacteria_4/k31/manifest.tsv
+```
+
+Each real-data manifest points to one-k-mer-per-line `kmers.txt` files. The benchmark runners only need `kmers.txt`; Jellyfish `counts.tsv`, `genome.jf`, and metadata files are useful for traceability but are not required to run benchmarks.
+
+## Regenerate Synthetic Data
+
+The final synthetic datasets were generated from 8 contigs of length 50,000 with GC bias 0.52 and seed 7.
 
 ```bash
 python scripts/generate_synthetic_data.py \
-	--output data/datasets/synth_k21.txt \
-	--k 21 \
-	--num-contigs 8 \
-	--contig-length 50000 \
-	--gc-bias 0.52 \
-	--seed 7
+  --output data/datasets/synth_k15.txt \
+  --k 15 \
+  --num-contigs 8 \
+  --contig-length 50000 \
+  --gc-bias 0.52 \
+  --seed 7
+
+python scripts/generate_synthetic_data.py \
+  --output data/datasets/synth_k21.txt \
+  --k 21 \
+  --num-contigs 8 \
+  --contig-length 50000 \
+  --gc-bias 0.52 \
+  --seed 7
+
+python scripts/generate_synthetic_data.py \
+  --output data/datasets/synth_k31.txt \
+  --k 31 \
+  --num-contigs 8 \
+  --contig-length 50000 \
+  --gc-bias 0.52 \
+  --seed 7
 ```
 
-### 2) Build each filter from same input
+You usually do not need to regenerate these unless the files are missing or you intentionally want a fresh dataset.
 
-```bash
-python scripts/build_all.py \
-	--kmer-file data/datasets/synth_k21.txt \
-	--output-dir data/datasets/artifacts_k21 \
-	--k 21 \
-	--seed 7
-```
+## Run Synthetic Benchmarks
 
-### 3) Run sweep benchmarks (k, filter family, FPR)
+This runs Bloom, Cuckoo, XOR, and learned filters on all three synthetic k values and target FPRs `1e-2`, `1e-3`, and `1e-4`.
+
+The first command uses `--overwrite` to replace old synthetic results. The next two append k=21 and k=31 into the same output tree.
 
 ```bash
 python scripts/run_benchmarks.py \
-	--dataset data/datasets/synth_k21.txt \
-	--dataset-name synth_k21 \
-	--output-dir benchmarking/results \
-	--seed 7 \
-	--repetitions 3
+  --dataset data/datasets/synth_k15.txt \
+  --dataset-name synth_k15 \
+  --output-dir benchmarking/results \
+  --overwrite \
+  --seed 7 \
+  --repetitions 3 \
+  --filters bloom,cuckoo,xor,learned \
+  --fprs 1e-2,1e-3,1e-4
+
+python scripts/run_benchmarks.py \
+  --dataset data/datasets/synth_k21.txt \
+  --dataset-name synth_k21 \
+  --output-dir benchmarking/results \
+  --seed 7 \
+  --repetitions 3 \
+  --filters bloom,cuckoo,xor,learned \
+  --fprs 1e-2,1e-3,1e-4
+
+python scripts/run_benchmarks.py \
+  --dataset data/datasets/synth_k31.txt \
+  --dataset-name synth_k31 \
+  --output-dir benchmarking/results \
+  --seed 7 \
+  --repetitions 3 \
+  --filters bloom,cuckoo,xor,learned \
+  --fprs 1e-2,1e-3,1e-4
 ```
 
-By default, the script infers k from the dataset file and runs all filter families.
-For a fixed k dataset like synth_k21, this avoids invalid k sweeps automatically.
+Synthetic benchmark outputs are written under:
 
-### 4) Plot benchmark results
+```text
+benchmarking/results/k15/<filter>/
+benchmarking/results/k21/<filter>/
+benchmarking/results/k31/<filter>/
+```
+
+Each run writes a JSON file and updates `aggregate_results.csv`.
+
+## Plot Synthetic Results
 
 ```bash
 python scripts/plot_results.py \
-	--results-dir benchmarking/results \
-	--output-dir benchmarking/results/plots
+  --results-dir benchmarking/results \
+  --output-dir benchmarking/results/plots
 ```
 
-This generates cross-k plots using the nearest target FPR per filter/k around
-reference 1e-3, plus a dedicated achieved-vs-target FPR sweep plot.
+Plots are written to:
 
-## CLI Examples by Subsystem
+```text
+benchmarking/results/plots/
+```
 
-### Bloom
+Use these synthetic plots in the report or slides:
+
+```text
+throughput_by_filter.png
+memory_per_kmer_by_filter.png
+false_positive_rate_by_filter.png
+build_time_by_filter.png
+fpr_vs_target.png
+```
+
+## Run Real Bacterial Benchmarks
+
+The real datasets are much larger. The recommended final run is target FPR `1e-3` only, across all four organisms, all three k values, and all four filters:
 
 ```bash
-python -m bloom_filters.cli build \
-	--kmer-file data/datasets/synth_k21.txt \
-	--output data/datasets/bloom_k21.json \
-	--fpr 1e-3
+python scripts/run_real_bacteria_benchmarks.py \
+  --output-root benchmarking/final_results/real/diverse_bacteria_4 \
+  --seed 7 \
+  --repetitions 1 \
+  --filters bloom,cuckoo,xor,learned \
+  --fprs 1e-3 \
+  --rerun-completed \
+  --stop-on-error
 ```
 
-### Cuckoo
+This runs 48 benchmark tasks:
+
+```text
+12 datasets x 4 filters x 1 target FPR
+```
+
+Progress is printed to the terminal and also logged at:
+
+```text
+benchmarking/final_results/real/diverse_bacteria_4/run_real_bacteria_benchmarks.log
+```
+
+Real benchmark outputs are written under:
+
+```text
+benchmarking/final_results/real/diverse_bacteria_4/<dataset_id>/k<k>/<filter>/
+```
+
+For example:
+
+```text
+benchmarking/final_results/real/diverse_bacteria_4/ecoli_k31/k31/xor/
+```
+
+## Plot Real Results
+
+For the final real-data plots, use only the fresh `1e-3` reference-FPR rows:
 
 ```bash
-python -m cuckoo_filters.cli build \
-	--kmer-file data/datasets/synth_k21.txt \
-	--output data/datasets/cuckoo_k21.json \
-	--fingerprint-bits 12
+python scripts/plot_real_bacteria_results.py \
+  --results-dir benchmarking/final_results/real/diverse_bacteria_4 \
+  --output-dir benchmarking/final_results/real/diverse_bacteria_4/plots \
+  --reference-fpr 1e-3 \
+  --only-reference-fpr
 ```
 
-### XOR
+Plots and summary CSVs are written to:
+
+```text
+benchmarking/final_results/real/diverse_bacteria_4/plots/
+```
+
+Use these real plots in the report or slides:
+
+```text
+throughput_by_filter.png
+memory_per_kmer_by_filter.png
+false_positive_rate_by_filter.png
+build_time_by_filter.png
+fpr_vs_target.png
+```
+
+The real-data summary tables are:
+
+```text
+real_cross_k_summary.csv
+real_fpr_sweep_summary.csv
+```
+
+## Run One Small Benchmark
+
+For a quick smoke test:
 
 ```bash
-python -m xor_filters.cli build \
-	--kmer-file data/datasets/synth_k21.txt \
-	--output data/datasets/xor_k21.json \
-	--fingerprint-bits 8 \
-	--backend auto
+python scripts/run_benchmarks.py \
+  --dataset data/datasets/synth_k15.txt \
+  --dataset-name synth_k15_smoke \
+  --output-dir benchmarking/smoke_results \
+  --overwrite \
+  --seed 7 \
+  --repetitions 1 \
+  --filters bloom,cuckoo,xor \
+  --fprs 1e-3
 ```
 
-### Learned
+Plot it:
 
 ```bash
-python -m learned_filters.cli train \
-	--kmer-file data/datasets/synth_k21.txt \
-	--output data/datasets/learned_k21 \
-	--k 21 \
-	--backup-fpr 1e-3
+python scripts/plot_results.py \
+  --results-dir benchmarking/smoke_results \
+  --output-dir benchmarking/smoke_results/plots
 ```
 
-### Benchmark Runner CLI
+## Run a Learned-Backend Variant
+
+The retained final results use the default learned backend:
+
+```text
+ngram_sgd
+```
+
+Other learned backends are implemented and can be run with `--learned-backend`:
+
+```text
+composition_logistic
+dna_ngram_sgd
+ngram_nb
+ngram_sgd
+prefix_set
+position_logistic
+```
+
+Example:
 
 ```bash
-python -m benchmarking.cli run --config path/to/experiment_config.json
+python scripts/run_benchmarks.py \
+  --dataset data/datasets/synth_k15.txt \
+  --dataset-name synth_k15_dna_ngram_sgd \
+  --output-dir benchmarking/learned_backend_experiments \
+  --overwrite \
+  --seed 7 \
+  --repetitions 1 \
+  --filters learned \
+  --fprs 1e-3 \
+  --learned-backend dna_ngram_sgd
 ```
 
-Use this when you want strict, explicit control for one experiment configuration.
-Use scripts/run_benchmarks.py when you want automatic multi-filter sweeps.
+Use a separate output directory for learned-backend experiments so they do not overwrite the final reported results.
 
-## Which commands are required?
+## Build Filter Artifacts Directly
 
-- scripts/generate_synthetic_data.py: required to create input k-mers (unless you already have them).
-- scripts/run_benchmarks.py: enough to run all implemented filters on that dataset.
-- scripts/build_all.py: optional convenience step to build and inspect standalone artifacts.
-- per-filter module CLIs (python -m bloom_filters.cli, etc.): optional, useful for targeted debugging.
-- python -m benchmarking.cli run --config ...: optional single-config runner for reproducible custom experiments.
+To build and save filter objects from one k-mer file:
 
-## Experiment Config Format
-
-Use JSON matching benchmarking.ExperimentConfig:
-
-```json
-{
-	"dataset_name": "synth_k21",
-	"dataset_path": "data/datasets/synth_k21.txt",
-	"k": 21,
-	"canonicalize": false,
-	"filter_type": "bloom",
-	"filter_params": {
-		"false_positive_rate": 0.001
-	},
-	"positive_query_count": 10000,
-	"negative_query_count": 10000,
-	"random_seed": 7,
-	"output_directory": "benchmarking/results/synth_k21/bloom",
-	"repetitions": 3
-}
+```bash
+python scripts/build_all.py \
+  --kmer-file data/datasets/synth_k15.txt \
+  --output-dir artifacts/synth_k15 \
+  --k 15 \
+  --seed 7
 ```
 
-## Benchmark Outputs
+This writes serialized filter artifacts and prints a JSON summary.
 
-For each run:
-- one JSON result file in output directory
+## Final Report Draft
 
-Across runs:
-- aggregate_results.csv (appended rows with comparable schema)
+The current writeup draft is:
 
-Key fields include:
-- build_time_seconds
-- memory_usage_bytes
-- memory_per_kmer_bytes
-- true_positive_rate
-- false_positive_rate
-- throughput_qps
-- avg/p50/p95/p99 latency (microseconds)
-- cache proxy metrics (sequential/random/repeated query throughput)
+```text
+writeup.md
+```
 
-Default plot outputs:
-- false_positive_rate_by_filter.png
-- throughput_by_filter.png
-- memory_per_kmer_by_filter.png
-- build_time_by_filter.png
-- fpr_vs_target.png
+It contains methodology, dataset construction, filter implementation details, synthetic results, real-data results, and learned-filter analysis.
 
-## Notes on Pure-Python Limitations
+## Important Notes
 
-- XOR fallback backend is a placeholder AMQ-compatible implementation, not a mathematically faithful XOR filter construction.
-- Hardware cache counters are not collected directly; cache_proxy.py reports timing-based proxies.
-- Python memory accounting is approximate; compare metrics consistently across methods and include serialized artifact sizes when possible.
-
-## Reproducibility Guidance
-
-- Always set seeds for data generation and filter construction.
-- Keep k-mer input files immutable once generated for fair comparisons.
-- Run all methods on identical key/query sets when comparing FPR and throughput.
-- Repeat runs and inspect variance across repetitions.
-
-## Suggested Next Optimization Steps
-
-- Add a native XOR backend package and wire it through xor_filters/xor_filter.py.
-- Add optional C/C++ or Rust-backed Cuckoo/Bloom variants behind same interfaces.
-- Extend result aggregation with confidence intervals and statistical tests.
-- Add plotting notebooks or scripts for publication-ready figures.
+- Use `--overwrite` only when you intentionally want to replace an output directory.
+- Real learned-filter runs are slow. Most runtime is model feature extraction/training, not the Bloom backup.
+- The final real-data plots should be generated with `--only-reference-fpr` so old non-reference JSONs do not affect the figures.
+- If Matplotlib complains about cache directories, the plotting scripts set a temporary writable cache automatically.

@@ -1,25 +1,37 @@
-"""XOR filter facade with optional native backend and Python fallback.
+"""XOR filter facade with optional native backend and pure-Python backend.
 
-A fully correct and high-performance XOR filter is typically implemented in
-native code. This module provides:
-1) a thin wrapper path for optional external backends, and
-2) a deterministic Python fallback backend for framework integration/testing.
+The pure-Python backend implements a static peel-based XOR filter:
+1) hash each key to three positions,
+2) peel the resulting 3-uniform hypergraph,
+3) assign fingerprints in reverse peel order.
 
-The fallback is *not* a true XOR filter data structure; it uses a static Bloom
-backend to provide stable AMQ behavior while preserving interface compatibility.
+This is not intended to compete with native implementations for speed, but it
+is a real XOR-filter construction and is suitable for framework-level
+experiments when a native package is unavailable.
 """
 
 from __future__ import annotations
 
+import hashlib
 import importlib
 import json
+import math
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
 from benchmarking.interfaces import AMQFilter, FilterBuildMetadata
-from bloom_filters.bloom_filter import BloomFilter
+
+_MASK64 = (1 << 64) - 1
+
+
+def _mix64(value: int) -> int:
+    """SplitMix64 finalizer for deriving independent-looking hash words."""
+    z = (value + 0x9E3779B97F4A7C15) & _MASK64
+    z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9 & _MASK64
+    z = (z ^ (z >> 27)) * 0x94D049BB133111EB & _MASK64
+    return (z ^ (z >> 31)) & _MASK64
 
 
 @dataclass(slots=True)
@@ -28,94 +40,206 @@ class _NativeBackendHandle:
     class_name: str
 
 
-class _StaticBloomFallback:
-    """Static Bloom-based fallback backend.
+class _PythonXorBackend:
+    """Deterministic peel-based XOR filter backend."""
 
-    This backend is deterministic and AMQ-compatible, but it is not a true XOR
-    filter construction.
-    """
-
-    def __init__(self, fingerprint_bits: int, *, hash_seed: int = 0) -> None:
+    def __init__(
+        self,
+        fingerprint_bits: int,
+        *,
+        hash_seed: int = 0,
+        size_factor: float = 1.23,
+        max_retries: int = 64,
+    ) -> None:
         if fingerprint_bits <= 1:
             raise ValueError("fingerprint_bits must be > 1")
+        if size_factor <= 1.0:
+            raise ValueError("size_factor must be > 1")
+        if max_retries <= 0:
+            raise ValueError("max_retries must be > 0")
+
         self.fingerprint_bits = fingerprint_bits
         self.hash_seed = hash_seed
-        self.target_fpr = min(0.25, max(1e-6, 2 ** (-fingerprint_bits)))
-        self._bloom: BloomFilter | None = None
+        self.size_factor = size_factor
+        self.max_retries = max_retries
+        self.target_fpr = 2 ** (-fingerprint_bits)
+
+        self._fingerprint_mask = (1 << fingerprint_bits) - 1
+        self._fingerprints: list[int] = []
+        self._array_length = 0
         self._inserted_count = 0
+        self._build_seed = hash_seed
+        self._build_attempts = 0
+        self._effective_size_factor = size_factor
+
+    @staticmethod
+    def _normalize_key(key: str) -> str:
+        return key.upper()
+
+    def _hash_key(self, key: str, seed: int | None = None) -> int:
+        build_seed = self._build_seed if seed is None else seed
+        payload = f"{build_seed}:{self._normalize_key(key)}".encode("utf-8")
+        return int.from_bytes(hashlib.blake2b(payload, digest_size=8).digest(), "little")
+
+    def _fingerprint_from_hash(self, key_hash: int) -> int:
+        fp = _mix64(key_hash ^ 0xA5A5A5A5A5A5A5A5) & self._fingerprint_mask
+        return fp if fp != 0 else 1
+
+    def _locations_from_hash(self, key_hash: int, array_length: int | None = None) -> tuple[int, int, int]:
+        m = self._array_length if array_length is None else array_length
+        if m < 3:
+            raise ValueError("array_length must be >= 3")
+
+        x0 = _mix64(key_hash)
+        x1 = _mix64(key_hash ^ 0xD6E8FEB86659FD93)
+        x2 = _mix64(key_hash ^ 0xA0761D6478BD642F)
+
+        p0 = x0 % m
+        p1 = x1 % m
+        if p1 == p0:
+            p1 = (p1 + 1 + ((x1 >> 32) % (m - 1))) % m
+
+        p2 = x2 % m
+        if p2 == p0 or p2 == p1:
+            while p2 == p0 or p2 == p1:
+                p2 = (p2 + 1) % m
+
+        return p0, p1, p2
+
+    def _try_build_once(
+        self,
+        keys: Sequence[str],
+        *,
+        seed: int,
+        array_length: int,
+    ) -> tuple[list[int], list[tuple[int, int, int]], list[tuple[int, int]]] | None:
+        counts = [0] * array_length
+        edge_xors = [0] * array_length
+        key_hashes: list[int] = []
+        locations: list[tuple[int, int, int]] = []
+
+        for edge_index, key in enumerate(keys):
+            key_hash = self._hash_key(key, seed)
+            locs = self._locations_from_hash(key_hash, array_length)
+            key_hashes.append(key_hash)
+            locations.append(locs)
+            for loc in locs:
+                counts[loc] += 1
+                edge_xors[loc] ^= edge_index
+
+        queue = [idx for idx, count in enumerate(counts) if count == 1]
+        peeled = [False] * len(keys)
+        stack: list[tuple[int, int]] = []
+
+        while queue:
+            loc = queue.pop()
+            if counts[loc] != 1:
+                continue
+
+            edge_index = edge_xors[loc]
+            if edge_index < 0 or edge_index >= len(keys) or peeled[edge_index]:
+                continue
+
+            peeled[edge_index] = True
+            stack.append((edge_index, loc))
+
+            for neighbor in locations[edge_index]:
+                counts[neighbor] -= 1
+                edge_xors[neighbor] ^= edge_index
+                if counts[neighbor] == 1:
+                    queue.append(neighbor)
+
+        if len(stack) != len(keys):
+            return None
+
+        fingerprints = [0] * array_length
+        for edge_index, assigned_loc in reversed(stack):
+            wanted = self._fingerprint_from_hash(key_hashes[edge_index])
+            accum = 0
+            for loc in locations[edge_index]:
+                if loc != assigned_loc:
+                    accum ^= fingerprints[loc]
+            fingerprints[assigned_loc] = wanted ^ accum
+
+        return fingerprints, locations, stack
 
     def build(self, keys: Sequence[str]) -> None:
-        n = max(1, len(keys))
-        bloom = BloomFilter(
-            expected_items=n,
-            false_positive_rate=self.target_fpr,
-            hash_seed=self.hash_seed,
+        unique_keys = list(dict.fromkeys(self._normalize_key(key) for key in keys))
+        if not unique_keys:
+            raise ValueError("keys must be non-empty")
+
+        n = len(unique_keys)
+        last_length = 0
+        for attempt in range(self.max_retries):
+            # Increase the array modestly after several failed peel attempts.
+            factor = self.size_factor + 0.03 * (attempt // 8)
+            array_length = max(3, math.ceil(factor * n))
+            if array_length == last_length:
+                array_length += 1
+            last_length = array_length
+
+            seed = self.hash_seed + attempt * 0x9E3779B1
+            built = self._try_build_once(
+                unique_keys,
+                seed=seed,
+                array_length=array_length,
+            )
+            if built is None:
+                continue
+
+            fingerprints, _, _ = built
+            self._fingerprints = fingerprints
+            self._array_length = array_length
+            self._inserted_count = n
+            self._build_seed = seed
+            self._build_attempts = attempt + 1
+            self._effective_size_factor = factor
+            return
+
+        raise RuntimeError(
+            "Failed to construct XOR filter after "
+            f"{self.max_retries} attempts; try increasing size_factor"
         )
-        bloom.build(keys)
-        self._bloom = bloom
-        self._inserted_count = len(keys)
 
     def contains(self, key: str) -> bool:
-        if self._bloom is None:
+        if not self._fingerprints:
             return False
-        return self._bloom.contains(key)
+        key_hash = self._hash_key(key)
+        loc0, loc1, loc2 = self._locations_from_hash(key_hash)
+        observed = self._fingerprints[loc0] ^ self._fingerprints[loc1] ^ self._fingerprints[loc2]
+        return observed == self._fingerprint_from_hash(key_hash)
 
     def memory_usage_bytes(self) -> int:
-        if self._bloom is None:
-            return 0
-        return self._bloom.memory_usage_bytes()
+        return math.ceil(len(self._fingerprints) * self.fingerprint_bits / 8)
 
     def to_payload(self) -> dict[str, Any]:
-        if self._bloom is None:
-            return {
-                "fingerprint_bits": self.fingerprint_bits,
-                "hash_seed": self.hash_seed,
-                "target_fpr": self.target_fpr,
-                "bloom": None,
-            }
-
-        bloom = self._bloom
         return {
             "fingerprint_bits": self.fingerprint_bits,
             "hash_seed": self.hash_seed,
-            "target_fpr": self.target_fpr,
-            "bloom": {
-                "expected_items": bloom.expected_items,
-                "false_positive_rate": bloom.false_positive_rate,
-                "hash_seed": bloom.hash_seed,
-                "num_bits": bloom.num_bits,
-                "num_hashes": bloom.num_hashes,
-                "inserted_count": bloom._inserted_count,
-                "build_time_seconds": bloom._build_time_seconds,
-                "bitarray_hex": bytes(bloom._bytes).hex(),
-            },
+            "build_seed": self._build_seed,
+            "size_factor": self.size_factor,
+            "effective_size_factor": self._effective_size_factor,
+            "max_retries": self.max_retries,
+            "array_length": self._array_length,
+            "inserted_count": self._inserted_count,
+            "build_attempts": self._build_attempts,
+            "fingerprints": self._fingerprints,
         }
 
     @classmethod
-    def from_payload(cls, payload: dict[str, Any]) -> _StaticBloomFallback:
+    def from_payload(cls, payload: dict[str, Any]) -> "_PythonXorBackend":
         inst = cls(
             fingerprint_bits=int(payload["fingerprint_bits"]),
             hash_seed=int(payload.get("hash_seed", 0)),
+            size_factor=float(payload.get("size_factor", 1.23)),
+            max_retries=int(payload.get("max_retries", 64)),
         )
-        inst.target_fpr = float(payload.get("target_fpr", inst.target_fpr))
-
-        bloom_payload = payload.get("bloom")
-        if isinstance(bloom_payload, dict):
-            bloom = BloomFilter(
-                expected_items=int(bloom_payload["expected_items"]),
-                false_positive_rate=float(bloom_payload["false_positive_rate"]),
-                hash_seed=int(bloom_payload.get("hash_seed", 0)),
-            )
-            bloom.num_bits = int(bloom_payload["num_bits"])
-            bloom.num_hashes = int(bloom_payload["num_hashes"])
-            bloom._bytes = bytearray(bytes.fromhex(bloom_payload["bitarray_hex"]))
-            bloom._inserted_count = int(bloom_payload.get("inserted_count", 0))
-            bloom._build_time_seconds = bloom_payload.get("build_time_seconds")
-            bloom._built = True
-
-            inst._bloom = bloom
-            inst._inserted_count = bloom._inserted_count
-
+        inst._build_seed = int(payload.get("build_seed", inst.hash_seed))
+        inst._effective_size_factor = float(payload.get("effective_size_factor", inst.size_factor))
+        inst._array_length = int(payload.get("array_length", 0))
+        inst._inserted_count = int(payload.get("inserted_count", 0))
+        inst._build_attempts = int(payload.get("build_attempts", 0))
+        inst._fingerprints = [int(v) for v in payload.get("fingerprints", [])]
         return inst
 
 
@@ -129,16 +253,29 @@ class XorFilter(AMQFilter):
         *,
         fingerprint_bits: int = 8,
         backend: str = "auto",
+        hash_seed: int = 0,
+        size_factor: float = 1.23,
+        max_retries: int = 64,
     ) -> None:
+        if backend not in {"auto", "native", "python", "fallback"}:
+            raise ValueError(
+                "backend must be one of 'auto', 'native', 'python', or "
+                f"'fallback', got {backend!r}"
+            )
         self.fingerprint_bits = fingerprint_bits
         self.requested_backend = backend
+        self.hash_seed = hash_seed
+        self.size_factor = size_factor
+        self.max_retries = max_retries
 
         self._backend_name = "uninitialized"
         self._native_handle: _NativeBackendHandle | None = None
         self._native_obj: Any | None = None
-        self._fallback = _StaticBloomFallback(
+        self._python_backend = _PythonXorBackend(
             fingerprint_bits=fingerprint_bits,
-            hash_seed=0,
+            hash_seed=hash_seed,
+            size_factor=size_factor,
+            max_retries=max_retries,
         )
 
         self._inserted_count = 0
@@ -146,11 +283,7 @@ class XorFilter(AMQFilter):
         self._built = False
 
     def _try_build_native(self, keys: Sequence[str]) -> bool:
-        """Best-effort native backend discovery.
-
-        Supported probes are intentionally conservative. If no known compatible
-        package API is found, the function returns False.
-        """
+        """Best-effort native backend discovery."""
         candidates: list[tuple[str, str]] = [
             ("pyxorfilter", "Xor8"),
             ("xorfilter", "Xor8"),
@@ -167,9 +300,6 @@ class XorFilter(AMQFilter):
             if cls is None:
                 continue
 
-            # Probe two common patterns:
-            # pattern A: ctor accepts keys
-            # pattern B: empty ctor plus .build(keys)
             try:
                 obj = cls(keys)
                 if hasattr(obj, "contains") or hasattr(obj, "__contains__"):
@@ -197,26 +327,38 @@ class XorFilter(AMQFilter):
 
     def build(self, keys: Sequence[str]) -> None:
         """Build or rebuild the static filter from keys."""
+        unique_keys = list(dict.fromkeys(key.upper() for key in keys))
+        if not unique_keys:
+            raise ValueError("keys must be non-empty")
+
         start = time.perf_counter()
 
         built_native = False
         if self.requested_backend == "auto":
-            built_native = self._try_build_native(keys)
+            built_native = self._try_build_native(unique_keys)
         elif self.requested_backend == "native":
-            built_native = self._try_build_native(keys)
+            built_native = self._try_build_native(unique_keys)
             if not built_native:
                 raise RuntimeError(
                     "No compatible native XOR backend found. "
-                    "Install and configure a supported package or use backend='fallback'."
+                    "Install and configure a supported package or use backend='python'."
                 )
+        elif self.requested_backend in {"python", "fallback"}:
+            built_native = False
 
         if not built_native:
-            self._fallback.build(keys)
+            self._python_backend = _PythonXorBackend(
+                fingerprint_bits=self.fingerprint_bits,
+                hash_seed=self.hash_seed,
+                size_factor=self.size_factor,
+                max_retries=self.max_retries,
+            )
+            self._python_backend.build(unique_keys)
             self._native_handle = None
             self._native_obj = None
-            self._backend_name = "fallback:static_bloom"
+            self._backend_name = "python:xor"
 
-        self._inserted_count = len(keys)
+        self._inserted_count = len(unique_keys)
         self._build_time_seconds = time.perf_counter() - start
         self._built = True
 
@@ -228,27 +370,20 @@ class XorFilter(AMQFilter):
                 return bool(contains_fn(key))
             return bool(key in self._native_obj)
 
-        return self._fallback.contains(key)
+        return self._python_backend.contains(key)
 
     def batch_contains(self, keys: Sequence[str]) -> list[bool]:
         """Return membership decisions for many keys."""
         return [self.contains(key) for key in keys]
 
     def memory_usage_bytes(self) -> int:
-        """Return approximate in-memory usage in bytes.
-
-        For native backend this is estimated and may be optimistic.
-        """
+        """Return approximate raw fingerprint-array memory in bytes."""
         if self._native_obj is not None:
-            return int(self._inserted_count * self.fingerprint_bits / 8)
-        return self._fallback.memory_usage_bytes()
+            return math.ceil(self._inserted_count * self.fingerprint_bits / 8)
+        return self._python_backend.memory_usage_bytes()
 
     def save(self, path: str | Path) -> None:
-        """Serialize filter artifact to JSON.
-
-        Native backend artifacts are not currently persisted directly; saving in
-        native mode captures wrapper metadata only and requires rebuild on load.
-        """
+        """Serialize filter artifact to JSON."""
         output_path = Path(path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -257,9 +392,12 @@ class XorFilter(AMQFilter):
             "fingerprint_bits": self.fingerprint_bits,
             "requested_backend": self.requested_backend,
             "backend_name": self._backend_name,
+            "hash_seed": self.hash_seed,
+            "size_factor": self.size_factor,
+            "max_retries": self.max_retries,
             "inserted_count": self._inserted_count,
             "build_time_seconds": self._build_time_seconds,
-            "fallback_payload": self._fallback.to_payload(),
+            "python_payload": self._python_backend.to_payload(),
             "native_handle": (
                 {
                     "module_name": self._native_handle.module_name,
@@ -274,7 +412,7 @@ class XorFilter(AMQFilter):
             json.dump(payload, handle, sort_keys=True, indent=2)
 
     @classmethod
-    def load(cls, path: str | Path) -> XorFilter:
+    def load(cls, path: str | Path) -> "XorFilter":
         """Load serialized XOR facade artifact."""
         input_path = Path(path)
         if not input_path.exists():
@@ -291,29 +429,45 @@ class XorFilter(AMQFilter):
         filt = cls(
             fingerprint_bits=int(payload["fingerprint_bits"]),
             backend=str(payload.get("requested_backend", "auto")),
+            hash_seed=int(payload.get("hash_seed", 0)),
+            size_factor=float(payload.get("size_factor", 1.23)),
+            max_retries=int(payload.get("max_retries", 64)),
         )
-        filt._backend_name = str(payload.get("backend_name", "fallback:static_bloom"))
+        filt._backend_name = str(payload.get("backend_name", "python:xor"))
         filt._inserted_count = int(payload.get("inserted_count", 0))
         filt._build_time_seconds = payload.get("build_time_seconds")
-        filt._fallback = _StaticBloomFallback.from_payload(payload["fallback_payload"])
+
+        python_payload = payload.get("python_payload")
+        if isinstance(python_payload, dict):
+            filt._python_backend = _PythonXorBackend.from_payload(python_payload)
+        else:
+            raise ValueError("XOR artifact does not contain a Python XOR payload")
+
         filt._built = True
         return filt
 
     def stats(self) -> dict[str, Any]:
         """Return implementation metadata and run statistics."""
+        parameters: dict[str, Any] = {
+            "fingerprint_bits": self.fingerprint_bits,
+            "backend": self._backend_name,
+            "requested_backend": self.requested_backend,
+        }
+        if self._native_obj is None:
+            parameters.update(
+                {
+                    "array_length": self._python_backend._array_length,
+                    "size_factor": self._python_backend._effective_size_factor,
+                    "build_attempts": self._python_backend._build_attempts,
+                    "hash_seed": self._python_backend._build_seed,
+                }
+            )
+
         metadata = FilterBuildMetadata(
             filter_name=self.FILTER_NAME,
-            parameters={
-                "fingerprint_bits": self.fingerprint_bits,
-                "backend": self._backend_name,
-                "requested_backend": self.requested_backend,
-            },
+            parameters=parameters,
             inserted_keys=self._inserted_count,
-            target_false_positive_rate=(
-                2 ** (-self.fingerprint_bits)
-                if self._native_obj is not None
-                else self._fallback.target_fpr
-            ),
+            target_false_positive_rate=2 ** (-self.fingerprint_bits),
             actual_memory_usage_bytes=self.memory_usage_bytes(),
             build_time_seconds=self._build_time_seconds,
         )
@@ -322,9 +476,8 @@ class XorFilter(AMQFilter):
             {
                 "built": self._built,
                 "note": (
-                    "fallback backend uses static Bloom and is not a true XOR filter; "
-                    "use native backend for publication-quality XOR comparisons"
-                    if self._backend_name.startswith("fallback")
+                    "pure-Python peel-based XOR backend active"
+                    if self._native_obj is None
                     else "native backend active"
                 ),
             }

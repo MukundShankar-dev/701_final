@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 23.07709159795195,
+  "build_time_seconds": 487.46559545898344,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 42901.02422814986,
+    "repeated_qps": 46057.49741100404,
+    "sequential_qps": 43377.533836694616
+  },
+  "dataset_name": "pseudomonas_aeruginosa_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 7066838,
+    "build_time_seconds": 485.0585436249967,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 6212635,
+    "model_eval": {
+      "accuracy": 0.5224837562171704,
+      "avg_precision": 0.7317202199506465,
+      "false_positive_rate": 0.007326608955531509,
+      "model_false_negative_count": 5884523.0,
+      "model_false_negative_rate": 0.9471863388079294,
+      "model_fnr": 0.947343749664791,
+      "model_fpr": 0.007326608955531509,
+      "roc_auc": 0.7471085249316411,
+      "selected_threshold": 0.8095144479741466,
+      "target_model_fpr": 0.01,
+      "threshold": 0.8095144479741466,
+      "true_positive_rate": 0.05265625033520907,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.01,
+      "k": 21,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 0.8095144479741466,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.0172,
+  "filter_params": {
+    "backup_false_positive_rate": 0.01,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 6212635,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.1374944769811843,
+  "memory_usage_bytes": 7066838,
+  "p50_latency_us": 23.07709159795195,
+  "p95_latency_us": 23.07709159795195,
+  "p99_latency_us": 23.07709159795195,
+  "run_id": "learned_pseudomonas_aeruginosa_k21_k21_f65d2a8089_run0",
+  "throughput_qps": 43333.01689060108,
+  "true_positive_rate": 1.0
+}

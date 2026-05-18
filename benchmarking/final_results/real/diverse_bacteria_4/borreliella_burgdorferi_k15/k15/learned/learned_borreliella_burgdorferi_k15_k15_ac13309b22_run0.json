@@ -1,0 +1,68 @@
+{
+  "avg_latency_us": 18.471197901817504,
+  "build_time_seconds": 73.81948691702564,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 57630.253872845584,
+    "repeated_qps": 57517.78192926523,
+    "sequential_qps": 56773.53179992511
+  },
+  "dataset_name": "borreliella_burgdorferi_k15",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 3109173,
+    "build_time_seconds": 73.41498570799013,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "inserted_keys": 1290666,
+    "model_eval": {
+      "accuracy": 0.5007463842975206,
+      "avg_precision": 0.6724907630058578,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 1290664.0,
+      "model_false_negative_rate": 0.9999984504124227,
+      "model_fnr": 0.9999948270153948,
+      "model_fpr": 0.0,
+      "roc_auc": 0.6869082970105832,
+      "selected_threshold": 0.8499951659052012,
+      "target_model_fpr": 0.0001,
+      "threshold": 0.8499951659052012,
+      "true_positive_rate": 5.172984605197815e-06,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.0001,
+      "k": 15,
+      "model_backend": "ngram_sgd",
+      "model_threshold": 0.8499951659052012,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ]
+    },
+    "target_false_positive_rate": 0.0001
+  },
+  "false_positive_rate": 0.0001,
+  "filter_params": {
+    "backup_false_positive_rate": 0.0001,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 1290666,
+  "k": 15,
+  "memory_per_kmer_bytes": 2.408967928185913,
+  "memory_usage_bytes": 3109173,
+  "p50_latency_us": 18.471197901817504,
+  "p95_latency_us": 18.471197901817504,
+  "p99_latency_us": 18.471197901817504,
+  "run_id": "learned_borreliella_burgdorferi_k15_k15_ac13309b22_run0",
+  "throughput_qps": 54138.34042141919,
+  "true_positive_rate": 1.0
+}

@@ -69,12 +69,17 @@ class CuckooFilter(AMQFilter, SupportsDeletion):
     def _hash64(self, payload: bytes) -> int:
         return int.from_bytes(hashlib.blake2b(payload, digest_size=8).digest(), "little")
 
+    @staticmethod
+    def _normalize_key(key: str) -> str:
+        return key.upper()
+
     def _fingerprint(self, key: str) -> int:
-        raw = self._hash64(key.encode("utf-8")) & self._fingerprint_mask
+        raw = self._hash64(self._normalize_key(key).encode("utf-8")) & self._fingerprint_mask
         return raw if raw != 0 else 1
 
     def _index1(self, key: str) -> int:
-        return self._hash64(f"i1:{key}".encode("utf-8")) & (self.bucket_count - 1)
+        normalized = self._normalize_key(key)
+        return self._hash64(f"i1:{normalized}".encode("utf-8")) & (self.bucket_count - 1)
 
     def _index2(self, index1: int, fingerprint: int) -> int:
         fp_hash = self._hash64(f"fp:{fingerprint}".encode("utf-8"))
@@ -93,11 +98,14 @@ class CuckooFilter(AMQFilter, SupportsDeletion):
 
         index = i1 if self._rng.random() < 0.5 else i2
         current_fp = fp
+        eviction_path: list[tuple[int, int, int]] = []
 
         for _ in range(self.max_relocations):
             bucket = self._buckets[index]
             evict_pos = self._rng.randrange(self.bucket_size)
+            previous_fp = bucket[evict_pos]
             bucket[evict_pos], current_fp = current_fp, bucket[evict_pos]
+            eviction_path.append((index, evict_pos, previous_fp))
 
             index = self._index2(index, current_fp)
             alt_bucket = self._buckets[index]
@@ -105,6 +113,8 @@ class CuckooFilter(AMQFilter, SupportsDeletion):
                 alt_bucket.append(current_fp)
                 return True
 
+        for rollback_index, rollback_pos, previous_fp in reversed(eviction_path):
+            self._buckets[rollback_index][rollback_pos] = previous_fp
         return False
 
     def insert(self, key: str) -> bool:

@@ -1,0 +1,73 @@
+{
+  "avg_latency_us": 23.546800046460703,
+  "build_time_seconds": 496.8568748750258,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 44092.61815959207,
+    "repeated_qps": 47843.793305704356,
+    "sequential_qps": 44237.60903942111
+  },
+  "dataset_name": "pseudomonas_aeruginosa_k31",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 11199879,
+    "build_time_seconds": 496.21831024996936,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "has_prefilter": false,
+    "inserted_keys": 6222731,
+    "model_eval": {
+      "accuracy": 0.49980956911194924,
+      "avg_precision": 0.7813234006475681,
+      "false_positive_rate": 0.0,
+      "model_false_negative_count": 6222729.0,
+      "model_false_negative_rate": 0.999999678597709,
+      "model_fnr": 0.9999989290678821,
+      "model_fpr": 0.0,
+      "roc_auc": 0.7893323927739354,
+      "selected_threshold": 0.9622816989840632,
+      "target_model_fpr": 0.001,
+      "threshold": 0.9622816989840632,
+      "true_positive_rate": 1.070932117896775e-06,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.001,
+      "k": 31,
+      "model_backend": "ngram_sgd",
+      "model_false_positive_rate": 0.001,
+      "model_threshold": 0.9622816989840632,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.001
+    },
+    "target_false_positive_rate": 0.001
+  },
+  "false_positive_rate": 0.0012,
+  "filter_params": {
+    "backup_false_positive_rate": 0.001,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 6222731,
+  "k": 31,
+  "memory_per_kmer_bytes": 1.7998333850523187,
+  "memory_usage_bytes": 11199879,
+  "p50_latency_us": 23.546800046460703,
+  "p95_latency_us": 23.546800046460703,
+  "p99_latency_us": 23.546800046460703,
+  "run_id": "learned_pseudomonas_aeruginosa_k31_k31_ddf41a4ee3_run0",
+  "throughput_qps": 42468.615609207125,
+  "true_positive_rate": 1.0
+}

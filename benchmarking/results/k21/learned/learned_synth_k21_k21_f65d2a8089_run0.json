@@ -1,0 +1,73 @@
+{
+  "avg_latency_us": 17.53895834942038,
+  "build_time_seconds": 22.397577249910682,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 62266.39287557169,
+    "repeated_qps": 62374.14716065071,
+    "sequential_qps": 60635.7762777448
+  },
+  "dataset_name": "synth_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 490083,
+    "build_time_seconds": 22.36330437497236,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "has_prefilter": false,
+    "inserted_keys": 399840,
+    "model_eval": {
+      "accuracy": 0.5008253301320528,
+      "avg_precision": 0.5210859611454899,
+      "false_positive_rate": 0.008908463039887893,
+      "model_false_negative_count": 395351.0,
+      "model_false_negative_rate": 0.9887730092036815,
+      "model_fnr": 0.9889016647502875,
+      "model_fpr": 0.008908463039887893,
+      "roc_auc": 0.5261931742441449,
+      "selected_threshold": 0.5789519572378428,
+      "target_model_fpr": 0.01,
+      "threshold": 0.5789519572378428,
+      "true_positive_rate": 0.011098335249712543,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.01,
+      "k": 21,
+      "model_backend": "ngram_sgd",
+      "model_false_positive_rate": 0.01,
+      "model_threshold": 0.5789519572378428,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.01
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.0171,
+  "filter_params": {
+    "backup_false_positive_rate": 0.01,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 399840,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.2256977791116446,
+  "memory_usage_bytes": 490083,
+  "p50_latency_us": 17.42255625431426,
+  "p95_latency_us": 17.42255625431426,
+  "p99_latency_us": 17.42255625431426,
+  "run_id": "learned_synth_k21_k21_f65d2a8089_run0",
+  "throughput_qps": 57015.92877281948,
+  "true_positive_rate": 1.0
+}

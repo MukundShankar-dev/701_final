@@ -1,0 +1,73 @@
+{
+  "avg_latency_us": 13.253547897329554,
+  "build_time_seconds": 196.29931441694498,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 81247.95037636797,
+    "repeated_qps": 79168.29298072902,
+    "sequential_qps": 80989.89434911347
+  },
+  "dataset_name": "ecoli_k15",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 5264422,
+    "build_time_seconds": 195.88807012501638,
+    "built": true,
+    "filter_name": "learned",
+    "has_backup_filter": true,
+    "has_prefilter": false,
+    "inserted_keys": 4517652,
+    "model_eval": {
+      "accuracy": 0.5105172596982505,
+      "avg_precision": 0.6351247496166066,
+      "false_positive_rate": 0.009340883191724285,
+      "model_false_negative_count": 4380169.0,
+      "model_false_negative_rate": 0.9695675983896059,
+      "model_fnr": 0.9693469293819817,
+      "model_fpr": 0.009340883191724285,
+      "roc_auc": 0.6556668283136029,
+      "selected_threshold": 0.7271270330726505,
+      "target_model_fpr": 0.01,
+      "threshold": 0.7271270330726505,
+      "true_positive_rate": 0.030653070618018304,
+      "used_fallback_selection": 0.0
+    },
+    "parameters": {
+      "backup_false_positive_rate": 0.01,
+      "k": 15,
+      "model_backend": "ngram_sgd",
+      "model_false_positive_rate": 0.01,
+      "model_threshold": 0.7271270330726505,
+      "ngram_features": 4096,
+      "ngram_range": [
+        3,
+        5
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.01
+    },
+    "target_false_positive_rate": 0.01
+  },
+  "false_positive_rate": 0.0206,
+  "filter_params": {
+    "backup_false_positive_rate": 0.01,
+    "model_backend": "ngram_sgd",
+    "model_threshold": 0.5,
+    "ngram_features": 4096,
+    "ngram_range": [
+      3,
+      5
+    ]
+  },
+  "filter_type": "learned",
+  "inserted_keys": 4517652,
+  "k": 15,
+  "memory_per_kmer_bytes": 1.1653004702442773,
+  "memory_usage_bytes": 5264422,
+  "p50_latency_us": 13.253547897329554,
+  "p95_latency_us": 13.253547897329554,
+  "p99_latency_us": 13.253547897329554,
+  "run_id": "learned_ecoli_k15_k15_f65d2a8089_run0",
+  "throughput_qps": 75451.49478061563,
+  "true_positive_rate": 1.0
+}

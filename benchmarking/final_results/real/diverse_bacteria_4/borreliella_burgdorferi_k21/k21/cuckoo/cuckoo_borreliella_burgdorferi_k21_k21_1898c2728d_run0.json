@@ -1,0 +1,48 @@
+{
+  "avg_latency_us": 3.5793333503534086,
+  "build_time_seconds": 4.998288332979428,
+  "cache_proxy": {
+    "batch_size": 5000,
+    "random_qps": 298908.73200329987,
+    "repeated_qps": 314866.9798118175,
+    "sequential_qps": 296898.8912130855
+  },
+  "dataset_name": "borreliella_burgdorferi_k21",
+  "extra_stats": {
+    "actual_memory_usage_bytes": 2621440,
+    "build_time_seconds": 4.816614832991036,
+    "built": true,
+    "filter_name": "cuckoo",
+    "fingerprint_only_false_positive_rate": 0.0009765625,
+    "inserted_keys": 1337144,
+    "insertion_failures": 0,
+    "load_factor": 0.6375999450683594,
+    "parameters": {
+      "bucket_count": 524288,
+      "bucket_size": 4,
+      "capacity": 1337144,
+      "fingerprint_bits": 10,
+      "max_relocations": 500,
+      "random_seed": 7
+    },
+    "target_false_positive_rate": 0.0078125
+  },
+  "false_positive_rate": 0.0043,
+  "filter_params": {
+    "bucket_size": 4,
+    "capacity": 1337144,
+    "false_positive_rate": 0.01,
+    "fingerprint_bits": 10
+  },
+  "filter_type": "cuckoo",
+  "inserted_keys": 1337144,
+  "k": 21,
+  "memory_per_kmer_bytes": 1.9604769568573017,
+  "memory_usage_bytes": 2621440,
+  "p50_latency_us": 3.5793333503534086,
+  "p95_latency_us": 3.5793333503534086,
+  "p99_latency_us": 3.5793333503534086,
+  "run_id": "cuckoo_borreliella_burgdorferi_k21_k21_1898c2728d_run0",
+  "throughput_qps": 279381.63398535206,
+  "true_positive_rate": 1.0
+}

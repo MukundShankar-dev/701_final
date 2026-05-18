@@ -54,6 +54,10 @@ class BloomFilter(AMQFilter):
         self._build_time_seconds: float | None = None
 
     @staticmethod
+    def _normalize_key(key: str) -> str:
+        return key.upper()
+
+    @staticmethod
     def _hashes(key: str, hash_seed: int, num_hashes: int, modulus: int) -> list[int]:
         payload = f"{hash_seed}:{key}".encode("utf-8")
 
@@ -77,8 +81,9 @@ class BloomFilter(AMQFilter):
 
     def add(self, key: str) -> None:
         """Insert one key into the Bloom filter."""
+        normalized = self._normalize_key(key)
         for bit_index in self._hashes(
-            key,
+            normalized,
             hash_seed=self.hash_seed,
             num_hashes=self.num_hashes,
             modulus=self.num_bits,
@@ -99,8 +104,9 @@ class BloomFilter(AMQFilter):
 
     def contains(self, key: str) -> bool:
         """Return membership query result for a single key."""
+        normalized = self._normalize_key(key)
         for bit_index in self._hashes(
-            key,
+            normalized,
             hash_seed=self.hash_seed,
             num_hashes=self.num_hashes,
             modulus=self.num_bits,
