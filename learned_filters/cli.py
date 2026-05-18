@@ -25,6 +25,10 @@ def _train_command(args: argparse.Namespace) -> None:
         model_backend=args.model_backend,
         ngram_features=args.ngram_features,
         ngram_range=(args.ngram_min, args.ngram_max),
+        total_false_positive_rate=args.total_fpr,
+        model_false_positive_rate=args.model_fpr,
+        prefilter_false_positive_rate=args.prefilter_fpr,
+        refit_model_on_full_dataset=args.refit_full,
     )
 
     metrics = filt.train(
@@ -93,8 +97,23 @@ def build_parser() -> argparse.ArgumentParser:
     train.add_argument(
         "--model-backend",
         default="ngram_sgd",
-        choices=["ngram_sgd", "position_logistic"],
+        choices=[
+            "composition_logistic",
+            "dna_ngram_sgd",
+            "ngram_nb",
+            "ngram_sgd",
+            "prefix_set",
+            "position_logistic",
+        ],
         help="Classifier backend",
+    )
+    train.add_argument("--total-fpr", type=float, default=None, help="Overall learned-filter FPR target")
+    train.add_argument("--model-fpr", type=float, default=None, help="Model FPR budget used for threshold tuning")
+    train.add_argument("--prefilter-fpr", type=float, default=None, help="Optional sandwich prefilter Bloom FPR")
+    train.add_argument(
+        "--refit-full",
+        action="store_true",
+        help="Refit the classifier on all generated training data after validation threshold tuning",
     )
     train.add_argument("--ngram-features", type=int, default=4096, help="Hashed n-gram feature count")
     train.add_argument("--ngram-min", type=int, default=3, help="Minimum character n-gram length")

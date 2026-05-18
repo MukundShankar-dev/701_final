@@ -1,16 +1,16 @@
 {
-  "avg_latency_us": 3.815993749594782,
-  "build_time_seconds": 37.76780287499423,
+  "avg_latency_us": 3.379416646203026,
+  "build_time_seconds": 36.11216208303813,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 272192.16291956237,
-    "repeated_qps": 275330.8210050447,
-    "sequential_qps": 271248.96583702305
+    "random_qps": 280301.35577239963,
+    "repeated_qps": 342378.79819157784,
+    "sequential_qps": 273906.31464535854
   },
   "dataset_name": "bacillus_subtilis_k31",
   "extra_stats": {
     "actual_memory_usage_bytes": 6412184,
-    "build_time_seconds": 36.36365912499605,
+    "build_time_seconds": 34.919682541978545,
     "built": true,
     "filter_name": "xor",
     "inserted_keys": 4170526,
@@ -26,7 +26,7 @@
     },
     "target_false_positive_rate": 0.0009765625
   },
-  "false_positive_rate": 0.0008,
+  "false_positive_rate": 0.0013,
   "filter_params": {
     "backend": "auto",
     "false_positive_rate": 0.001,
@@ -38,10 +38,10 @@
   "k": 31,
   "memory_per_kmer_bytes": 1.5375000659389246,
   "memory_usage_bytes": 6412184,
-  "p50_latency_us": 3.815993749594782,
-  "p95_latency_us": 3.815993749594782,
-  "p99_latency_us": 3.815993749594782,
+  "p50_latency_us": 3.379416646203026,
+  "p95_latency_us": 3.379416646203026,
+  "p99_latency_us": 3.379416646203026,
   "run_id": "xor_bacillus_subtilis_k31_k31_278801f348_run0",
-  "throughput_qps": 262054.93656958675,
+  "throughput_qps": 295909.05907490244,
   "true_positive_rate": 1.0
 }

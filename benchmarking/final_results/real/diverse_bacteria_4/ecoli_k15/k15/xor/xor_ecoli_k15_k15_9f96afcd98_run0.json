@@ -1,16 +1,16 @@
 {
-  "avg_latency_us": 4.425933300808538,
-  "build_time_seconds": 44.16302795900265,
+  "avg_latency_us": 3.1645854003727436,
+  "build_time_seconds": 38.958554000011645,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 263278.55948065233,
-    "repeated_qps": 268658.7245531871,
-    "sequential_qps": 260764.31171438337
+    "random_qps": 314725.20429711114,
+    "repeated_qps": 344757.2408120613,
+    "sequential_qps": 289881.91535954166
   },
   "dataset_name": "ecoli_k15",
   "extra_stats": {
     "actual_memory_usage_bytes": 9724246,
-    "build_time_seconds": 42.57787658300367,
+    "build_time_seconds": 37.72574587492272,
     "built": true,
     "filter_name": "xor",
     "inserted_keys": 4517652,
@@ -26,7 +26,7 @@
     },
     "target_false_positive_rate": 6.103515625e-05
   },
-  "false_positive_rate": 0.0001,
+  "false_positive_rate": 0.0,
   "filter_params": {
     "backend": "auto",
     "false_positive_rate": 0.0001,
@@ -38,10 +38,10 @@
   "k": 15,
   "memory_per_kmer_bytes": 2.1525000154947747,
   "memory_usage_bytes": 9724246,
-  "p50_latency_us": 4.425933300808538,
-  "p95_latency_us": 4.425933300808538,
-  "p99_latency_us": 4.425933300808538,
+  "p50_latency_us": 3.1645854003727436,
+  "p95_latency_us": 3.1645854003727436,
+  "p99_latency_us": 3.1645854003727436,
   "run_id": "xor_ecoli_k15_k15_9f96afcd98_run0",
-  "throughput_qps": 225941.04611050469,
+  "throughput_qps": 315997.1602858985,
   "true_positive_rate": 1.0
 }

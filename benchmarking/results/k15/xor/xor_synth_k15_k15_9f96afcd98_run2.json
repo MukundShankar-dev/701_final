@@ -1,16 +1,16 @@
 {
-  "avg_latency_us": 3.0563229151691,
-  "build_time_seconds": 2.6275848330697045,
+  "avg_latency_us": 3.0529326487643025,
+  "build_time_seconds": 2.7165205830242485,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 307341.8880140438,
-    "repeated_qps": 360217.57172810484,
-    "sequential_qps": 312467.71810433414
+    "random_qps": 309997.9544791014,
+    "repeated_qps": 345999.80239863927,
+    "sequential_qps": 342541.9962609495
   },
   "dataset_name": "synth_k15",
   "extra_stats": {
     "actual_memory_usage_bytes": 860614,
-    "build_time_seconds": 2.5987873749108985,
+    "build_time_seconds": 2.662252207985148,
     "built": true,
     "filter_name": "xor",
     "inserted_keys": 399820,
@@ -26,7 +26,7 @@
     },
     "target_false_positive_rate": 6.103515625e-05
   },
-  "false_positive_rate": 0.0001,
+  "false_positive_rate": 0.0,
   "filter_params": {
     "backend": "auto",
     "false_positive_rate": 0.0001,
@@ -38,10 +38,10 @@
   "k": 15,
   "memory_per_kmer_bytes": 2.1525036266319844,
   "memory_usage_bytes": 860614,
-  "p50_latency_us": 3.0805895454250276,
-  "p95_latency_us": 3.0805895454250276,
-  "p99_latency_us": 3.0805895454250276,
+  "p50_latency_us": 3.071714600082487,
+  "p95_latency_us": 3.071714600082487,
+  "p99_latency_us": 3.071714600082487,
   "run_id": "xor_synth_k15_k15_9f96afcd98_run2",
-  "throughput_qps": 327190.55798613874,
+  "throughput_qps": 327553.90146086505,
   "true_positive_rate": 1.0
 }

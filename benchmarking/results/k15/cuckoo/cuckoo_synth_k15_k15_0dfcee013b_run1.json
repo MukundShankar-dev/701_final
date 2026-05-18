@@ -1,16 +1,16 @@
 {
-  "avg_latency_us": 2.3758513833551356,
-  "build_time_seconds": 1.056868000072427,
+  "avg_latency_us": 3.0952027649618685,
+  "build_time_seconds": 1.1247442909516394,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 403511.89766943036,
-    "repeated_qps": 488314.37513342535,
-    "sequential_qps": 408146.1513791297
+    "random_qps": 348790.90159729234,
+    "repeated_qps": 458879.9100208173,
+    "sequential_qps": 312063.04666093754
   },
   "dataset_name": "synth_k15",
   "extra_stats": {
     "actual_memory_usage_bytes": 1114112,
-    "build_time_seconds": 1.0308743749046698,
+    "build_time_seconds": 1.0946883340366185,
     "built": true,
     "filter_name": "cuckoo",
     "fingerprint_only_false_positive_rate": 7.62939453125e-06,
@@ -39,10 +39,10 @@
   "k": 15,
   "memory_per_kmer_bytes": 2.786533940273123,
   "memory_usage_bytes": 1114112,
-  "p50_latency_us": 2.302243752637878,
-  "p95_latency_us": 2.302243752637878,
-  "p99_latency_us": 2.302243752637878,
+  "p50_latency_us": 3.1008166493847966,
+  "p95_latency_us": 3.1008166493847966,
+  "p99_latency_us": 3.1008166493847966,
   "run_id": "cuckoo_synth_k15_k15_0dfcee013b_run1",
-  "throughput_qps": 420901.74789797567,
+  "throughput_qps": 323080.6108472572,
   "true_positive_rate": 1.0
 }

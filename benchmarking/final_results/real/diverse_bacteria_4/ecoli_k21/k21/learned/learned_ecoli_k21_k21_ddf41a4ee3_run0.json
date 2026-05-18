@@ -1,32 +1,33 @@
 {
-  "avg_latency_us": 24.010831250052433,
-  "build_time_seconds": 360.000751375017,
+  "avg_latency_us": 17.880250047892332,
+  "build_time_seconds": 272.03102404100355,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 43298.410314248606,
-    "repeated_qps": 45835.897623653516,
-    "sequential_qps": 43681.59134105314
+    "random_qps": 58778.34108192793,
+    "repeated_qps": 63390.091418329015,
+    "sequential_qps": 58077.08689712708
   },
   "dataset_name": "ecoli_k21",
   "extra_stats": {
-    "actual_memory_usage_bytes": 8216187,
-    "build_time_seconds": 358.4620424580062,
+    "actual_memory_usage_bytes": 8216183,
+    "build_time_seconds": 271.6396596250124,
     "built": true,
     "filter_name": "learned",
     "has_backup_filter": true,
+    "has_prefilter": false,
     "inserted_keys": 4562542,
     "model_eval": {
       "accuracy": 0.4997789975328088,
-      "avg_precision": 0.662859346703675,
+      "avg_precision": 0.6640269642389861,
       "false_positive_rate": 0.0,
-      "model_false_negative_count": 4562538.0,
-      "model_false_negative_rate": 0.9999991232957417,
+      "model_false_negative_count": 4562536.0,
+      "model_false_negative_rate": 0.9999986849436125,
       "model_fnr": 0.9999985394743568,
       "model_fpr": 0.0,
-      "roc_auc": 0.6832943566742524,
-      "selected_threshold": 0.9047797052269838,
+      "roc_auc": 0.6844298639471488,
+      "selected_threshold": 0.9001281364246964,
       "target_model_fpr": 0.001,
-      "threshold": 0.9047797052269838,
+      "threshold": 0.9001281364246964,
       "true_positive_rate": 1.4605256431789802e-06,
       "used_fallback_selection": 0.0
     },
@@ -34,16 +35,20 @@
       "backup_false_positive_rate": 0.001,
       "k": 21,
       "model_backend": "ngram_sgd",
-      "model_threshold": 0.9047797052269838,
+      "model_false_positive_rate": 0.001,
+      "model_threshold": 0.9001281364246964,
       "ngram_features": 4096,
       "ngram_range": [
         3,
         5
-      ]
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.001
     },
     "target_false_positive_rate": 0.001
   },
-  "false_positive_rate": 0.0016,
+  "false_positive_rate": 0.0011,
   "filter_params": {
     "backup_false_positive_rate": 0.001,
     "model_backend": "ngram_sgd",
@@ -57,12 +62,12 @@
   "filter_type": "learned",
   "inserted_keys": 4562542,
   "k": 21,
-  "memory_per_kmer_bytes": 1.8007915324395918,
-  "memory_usage_bytes": 8216187,
-  "p50_latency_us": 24.010831250052433,
-  "p95_latency_us": 24.010831250052433,
-  "p99_latency_us": 24.010831250052433,
+  "memory_per_kmer_bytes": 1.8007906557353335,
+  "memory_usage_bytes": 8216183,
+  "p50_latency_us": 17.880250047892332,
+  "p95_latency_us": 17.880250047892332,
+  "p99_latency_us": 17.880250047892332,
   "run_id": "learned_ecoli_k21_k21_ddf41a4ee3_run0",
-  "throughput_qps": 41647.87089567406,
+  "throughput_qps": 55927.62949743406,
   "true_positive_rate": 1.0
 }

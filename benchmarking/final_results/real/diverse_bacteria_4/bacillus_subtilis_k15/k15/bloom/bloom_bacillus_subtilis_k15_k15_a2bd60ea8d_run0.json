@@ -1,17 +1,17 @@
 {
-  "avg_latency_us": 5.299314600415528,
-  "build_time_seconds": 26.056000332988333,
+  "avg_latency_us": 4.401095805224031,
+  "build_time_seconds": 24.690656000049785,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 255451.40536315108,
-    "repeated_qps": 271781.5960469603,
-    "sequential_qps": 255081.07025142957
+    "random_qps": 359785.2142145645,
+    "repeated_qps": 389742.00216930505,
+    "sequential_qps": 357851.45351132756
   },
   "dataset_name": "bacillus_subtilis_k15",
   "extra_stats": {
     "actual_memory_usage_bytes": 9902590,
     "bits_per_item": 19.170116909549666,
-    "build_time_seconds": 26.05389495799318,
+    "build_time_seconds": 24.68986312497873,
     "built": true,
     "filter_name": "bloom",
     "inserted_keys": 4132511,
@@ -24,7 +24,7 @@
     },
     "target_false_positive_rate": 0.0001
   },
-  "false_positive_rate": 0.0,
+  "false_positive_rate": 0.0001,
   "filter_params": {
     "expected_items": 4132511,
     "false_positive_rate": 0.0001
@@ -34,10 +34,10 @@
   "k": 15,
   "memory_per_kmer_bytes": 2.3962646439416617,
   "memory_usage_bytes": 9902590,
-  "p50_latency_us": 5.299314600415528,
-  "p95_latency_us": 5.299314600415528,
-  "p99_latency_us": 5.299314600415528,
+  "p50_latency_us": 4.401095805224031,
+  "p95_latency_us": 4.401095805224031,
+  "p99_latency_us": 4.401095805224031,
   "run_id": "bloom_bacillus_subtilis_k15_k15_a2bd60ea8d_run0",
-  "throughput_qps": 188703.6485664747,
+  "throughput_qps": 227216.13985612761,
   "true_positive_rate": 1.0
 }

@@ -1,32 +1,33 @@
 {
-  "avg_latency_us": 33.82832499919459,
-  "build_time_seconds": 459.4631686670182,
+  "avg_latency_us": 23.569427052279934,
+  "build_time_seconds": 330.6977009580005,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 30237.70866786268,
-    "repeated_qps": 31826.754901724384,
-    "sequential_qps": 30506.295226928098
+    "random_qps": 44119.98828329918,
+    "repeated_qps": 48832.78110244528,
+    "sequential_qps": 44043.167864379
   },
   "dataset_name": "bacillus_subtilis_k31",
   "extra_stats": {
-    "actual_memory_usage_bytes": 7511654,
-    "build_time_seconds": 458.0277260419971,
+    "actual_memory_usage_bytes": 7511656,
+    "build_time_seconds": 330.30349079100415,
     "built": true,
     "filter_name": "learned",
     "has_backup_filter": true,
+    "has_prefilter": false,
     "inserted_keys": 4170526,
     "model_eval": {
       "accuracy": 0.4994005553255464,
-      "avg_precision": 0.682516750628734,
+      "avg_precision": 0.6822031784337325,
       "false_positive_rate": 0.0,
-      "model_false_negative_count": 4170521.0,
-      "model_false_negative_rate": 0.9999988011104595,
+      "model_false_negative_count": 4170522.0,
+      "model_false_negative_rate": 0.9999990408883676,
       "model_fnr": 0.99999840339757,
       "model_fpr": 0.0,
-      "roc_auc": 0.6961274750133255,
-      "selected_threshold": 0.9140194591475145,
+      "roc_auc": 0.696099855853131,
+      "selected_threshold": 0.9144124841850926,
       "target_model_fpr": 0.001,
-      "threshold": 0.9140194591475145,
+      "threshold": 0.9144124841850926,
       "true_positive_rate": 1.5966024300288985e-06,
       "used_fallback_selection": 0.0
     },
@@ -34,12 +35,16 @@
       "backup_false_positive_rate": 0.001,
       "k": 31,
       "model_backend": "ngram_sgd",
-      "model_threshold": 0.9140194591475145,
+      "model_false_positive_rate": 0.001,
+      "model_threshold": 0.9144124841850926,
       "ngram_features": 4096,
       "ngram_range": [
         3,
         5
-      ]
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.001
     },
     "target_false_positive_rate": 0.001
   },
@@ -57,12 +62,12 @@
   "filter_type": "learned",
   "inserted_keys": 4170526,
   "k": 31,
-  "memory_per_kmer_bytes": 1.8011286825690573,
-  "memory_usage_bytes": 7511654,
-  "p50_latency_us": 33.82832499919459,
-  "p95_latency_us": 33.82832499919459,
-  "p99_latency_us": 33.82832499919459,
+  "memory_per_kmer_bytes": 1.8011291621248735,
+  "memory_usage_bytes": 7511656,
+  "p50_latency_us": 23.569427052279934,
+  "p95_latency_us": 23.569427052279934,
+  "p99_latency_us": 23.569427052279934,
   "run_id": "learned_bacillus_subtilis_k31_k31_ddf41a4ee3_run0",
-  "throughput_qps": 29561.02615260462,
+  "throughput_qps": 42427.84509703503,
   "true_positive_rate": 1.0
 }

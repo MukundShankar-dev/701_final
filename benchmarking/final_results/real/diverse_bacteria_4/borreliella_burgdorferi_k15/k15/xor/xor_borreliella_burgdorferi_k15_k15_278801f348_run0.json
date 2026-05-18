@@ -1,16 +1,16 @@
 {
-  "avg_latency_us": 4.130333349166904,
-  "build_time_seconds": 11.252557583997259,
+  "avg_latency_us": 3.4288083435967565,
+  "build_time_seconds": 10.791970582911745,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 250977.41902104317,
-    "repeated_qps": 274393.5849979756,
-    "sequential_qps": 259223.49583927053
+    "random_qps": 296937.8345435776,
+    "repeated_qps": 341306.9546212062,
+    "sequential_qps": 279091.18657544925
   },
   "dataset_name": "borreliella_burgdorferi_k15",
   "extra_stats": {
     "actual_memory_usage_bytes": 1984400,
-    "build_time_seconds": 10.92204679097631,
+    "build_time_seconds": 10.535740082967095,
     "built": true,
     "filter_name": "xor",
     "inserted_keys": 1290666,
@@ -38,10 +38,10 @@
   "k": 15,
   "memory_per_kmer_bytes": 1.5375007941636334,
   "memory_usage_bytes": 1984400,
-  "p50_latency_us": 4.130333349166904,
-  "p95_latency_us": 4.130333349166904,
-  "p99_latency_us": 4.130333349166904,
+  "p50_latency_us": 3.4288083435967565,
+  "p95_latency_us": 3.4288083435967565,
+  "p99_latency_us": 3.4288083435967565,
   "run_id": "xor_borreliella_burgdorferi_k15_k15_278801f348_run0",
-  "throughput_qps": 242111.20882088173,
+  "throughput_qps": 291646.51382964686,
   "true_positive_rate": 1.0
 }

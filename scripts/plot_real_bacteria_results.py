@@ -1,4 +1,4 @@
-"""Generate aggregate SVG plots for real bacterial-genome benchmark results."""
+"""Generate aggregate matplotlib plots for real bacterial-genome benchmark results."""
 
 from __future__ import annotations
 
@@ -7,8 +7,10 @@ import csv
 import html
 import json
 import math
+import os
 import re
 import statistics
+import tempfile
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,6 +51,8 @@ class CrossKSummaryRow:
     throughput_qps_std: float
     memory_per_kmer_bytes_mean: float
     memory_per_kmer_bytes_std: float
+    false_positive_rate_mean: float
+    false_positive_rate_std: float
     n_genomes: int
 
 
@@ -116,7 +120,8 @@ def load_run_rows(results_dir: str | Path) -> list[RunRow]:
         raise FileNotFoundError(f"Results directory not found: {root}")
 
     rows: list[RunRow] = []
-    for path in root.rglob("*.json"):
+    json_paths = sorted(root.rglob("*.json"))
+    for path in json_paths:
         try:
             with path.open("r", encoding="utf-8") as handle:
                 payload = json.load(handle)
@@ -153,7 +158,20 @@ def load_run_rows(results_dir: str | Path) -> list[RunRow]:
         )
 
     if not rows:
-        raise ValueError(f"No benchmark run JSON files found in {root}")
+        child_preview = "\n".join(f"  - {path}" for path in sorted(root.iterdir())[:10])
+        json_note = (
+            "No JSON files were found under that directory."
+            if not json_paths
+            else f"Found {len(json_paths)} JSON file(s), but none looked like benchmark run outputs."
+        )
+        raise ValueError(
+            f"No benchmark run JSON files found in {root}\n"
+            f"{json_note}\n"
+            "Expected files named like bloom_<dataset>_k21_<hash>_run0.json somewhere under --results-dir.\n"
+            "If you only have data/datasets/real/.../manifest.tsv files, the real datasets were prepared but "
+            "the benchmark outputs have not been generated or copied here.\n"
+            f"Directory preview:\n{child_preview or '  <empty>'}"
+        )
     return rows
 
 
@@ -178,6 +196,7 @@ def summarize_cross_k(rows: list[RunRow], reference_fpr: float) -> list[CrossKSu
             "build_time_per_1m_kmers": _mean(row.build_time_per_1m_kmers for row in selected),
             "throughput_qps": _mean(row.throughput_qps for row in selected),
             "memory_per_kmer_bytes": _mean(row.memory_per_kmer_bytes for row in selected),
+            "false_positive_rate": _mean(row.false_positive_rate for row in selected),
         })
 
     by_filter_k: dict[tuple[str, int], list[dict[str, float | str | int]]] = defaultdict(list)
@@ -189,6 +208,7 @@ def summarize_cross_k(rows: list[RunRow], reference_fpr: float) -> list[CrossKSu
         build_vals = [float(row["build_time_per_1m_kmers"]) for row in group]
         throughput_vals = [float(row["throughput_qps"]) for row in group]
         memory_vals = [float(row["memory_per_kmer_bytes"]) for row in group]
+        fpr_vals = [float(row["false_positive_rate"]) for row in group]
         summary.append(
             CrossKSummaryRow(
                 filter_label=filter_label,
@@ -199,6 +219,8 @@ def summarize_cross_k(rows: list[RunRow], reference_fpr: float) -> list[CrossKSu
                 throughput_qps_std=_std(throughput_vals),
                 memory_per_kmer_bytes_mean=_mean(memory_vals),
                 memory_per_kmer_bytes_std=_std(memory_vals),
+                false_positive_rate_mean=_mean(fpr_vals),
+                false_positive_rate_std=_std(fpr_vals),
                 n_genomes=len({str(row["genome_id"]) for row in group}),
             )
         )
@@ -253,6 +275,181 @@ def _write_csv(path: Path, rows: list[Any]) -> None:
         writer.writeheader()
         for row in rows:
             writer.writerow({field: getattr(row, field) for field in fieldnames})
+
+
+def _prepare_plot_cache() -> None:
+    cache_root = Path(tempfile.gettempdir()) / "amq_matplotlib_cache"
+    mplconfig = cache_root / "mplconfig"
+    xdg_cache = cache_root / "xdg"
+    mplconfig.mkdir(parents=True, exist_ok=True)
+    xdg_cache.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("MPLCONFIGDIR", str(mplconfig))
+    os.environ.setdefault("XDG_CACHE_HOME", str(xdg_cache))
+
+
+def _import_pyplot() -> Any:
+    _prepare_plot_cache()
+    import matplotlib.pyplot as plt
+
+    return plt
+
+
+def _label_for_plot(label: str) -> str:
+    if label == "xor" or label.startswith("xor"):
+        return label
+    return label
+
+
+def _color_for_label(label: str) -> str:
+    if label.startswith("xor"):
+        return FILTER_COLORS["xor"]
+    return FILTER_COLORS.get(label, "#555")
+
+
+def _ordered_labels(labels: Iterable[str]) -> list[str]:
+    present = set(labels)
+    ordered = [label for label in FILTER_ORDER if label in present]
+    return ordered + sorted(present - set(ordered))
+
+
+def _save_fig(plt: Any, path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    plt.tight_layout()
+    plt.savefig(path, dpi=180)
+    plt.close()
+    return path
+
+
+def _plot_metric_by_k_matplotlib(
+    rows: list[CrossKSummaryRow],
+    output_dir: Path,
+    *,
+    filename: str,
+    mean_attr: str,
+    std_attr: str,
+    title: str,
+    ylabel: str,
+    yscale: str = "linear",
+    baseline_zero: bool = True,
+) -> Path:
+    plt = _import_pyplot()
+    out = output_dir / filename
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    for label in _ordered_labels(row.filter_label for row in rows):
+        sub = sorted([row for row in rows if row.filter_label == label], key=lambda row: row.k)
+        if not sub:
+            continue
+        xs = [row.k for row in sub]
+        ys = [float(getattr(row, mean_attr)) for row in sub]
+        ax.plot(
+            xs,
+            ys,
+            marker="o",
+            linewidth=2,
+            label=_label_for_plot(label),
+            color=_color_for_label(label),
+        )
+
+    ax.set_title(title)
+    ax.set_xlabel("k")
+    ax.set_ylabel(ylabel)
+    ax.set_xticks([15, 21, 31])
+    ax.set_yscale(yscale)
+    if baseline_zero and yscale == "linear":
+        ax.set_ylim(bottom=0)
+    ax.grid(True, alpha=0.25)
+    ax.legend()
+    return _save_fig(plt, out)
+
+
+def _plot_fpr_sweep_matplotlib(rows: list[FprSummaryRow], output_dir: Path) -> Path:
+    plt = _import_pyplot()
+    out = output_dir / "fpr_vs_target.png"
+
+    detection_floor = 5e-5
+    fig, ax = plt.subplots(figsize=(9, 5))
+
+    for label in _ordered_labels(row.filter_label for row in rows):
+        sub = sorted([row for row in rows if row.filter_label == label], key=lambda row: row.target_fpr)
+        if not sub:
+            continue
+        xs = [row.target_fpr for row in sub]
+        ys = [max(row.false_positive_rate_mean, detection_floor) for row in sub]
+        ax.plot(
+            xs,
+            ys,
+            marker="o",
+            linewidth=2,
+            label=_label_for_plot(label),
+            color=_color_for_label(label),
+        )
+
+    targets = [row.target_fpr for row in rows if row.target_fpr > 0]
+    if targets:
+        lo, hi = min(targets), max(targets)
+        ax.plot([lo, hi], [lo, hi], color="#777", linestyle="--", linewidth=1.2, label="ideal")
+
+    ax.set_title("Achieved FPR vs Target FPR")
+    ax.set_xlabel("Target FPR")
+    ax.set_ylabel("Empirical FPR")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.grid(True, alpha=0.25)
+    ax.legend()
+    return _save_fig(plt, out)
+
+
+def write_matplotlib_plots(
+    cross_k_rows: list[CrossKSummaryRow],
+    fpr_rows: list[FprSummaryRow],
+    output_dir: Path,
+    reference_fpr: float,
+) -> list[Path]:
+    suffix = f" (nearest target FPR per filter/k, ref={reference_fpr:.1e})"
+    outputs = [
+        _plot_metric_by_k_matplotlib(
+            cross_k_rows,
+            output_dir,
+            filename="false_positive_rate_by_filter.png",
+            mean_attr="false_positive_rate_mean",
+            std_attr="false_positive_rate_std",
+            title=f"Empirical False Positive Rate by Filter and k{suffix}",
+            ylabel="False Positive Rate",
+            yscale="log",
+            baseline_zero=False,
+        ),
+        _plot_metric_by_k_matplotlib(
+            cross_k_rows,
+            output_dir,
+            filename="throughput_by_filter.png",
+            mean_attr="throughput_qps_mean",
+            std_attr="throughput_qps_std",
+            title=f"Mean Throughput by Filter and k{suffix}",
+            ylabel="Queries / second",
+        ),
+        _plot_metric_by_k_matplotlib(
+            cross_k_rows,
+            output_dir,
+            filename="memory_per_kmer_by_filter.png",
+            mean_attr="memory_per_kmer_bytes_mean",
+            std_attr="memory_per_kmer_bytes_std",
+            title=f"Memory per k-mer by Filter and k{suffix}",
+            ylabel="Bytes per inserted k-mer",
+            baseline_zero=False,
+        ),
+        _plot_metric_by_k_matplotlib(
+            cross_k_rows,
+            output_dir,
+            filename="build_time_by_filter.png",
+            mean_attr="build_time_per_1m_kmers_mean",
+            std_attr="build_time_per_1m_kmers_std",
+            title=f"Build Time by Filter and k{suffix}",
+            ylabel="Seconds per 1M inserted k-mers",
+        ),
+        _plot_fpr_sweep_matplotlib(fpr_rows, output_dir),
+    ]
+    return outputs
 
 
 def _fmt_num(value: float) -> str:
@@ -585,6 +782,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory for generated plots and summary CSVs",
     )
     parser.add_argument("--reference-fpr", type=float, default=1e-3, help="Target FPR used for cross-k plots")
+    parser.add_argument(
+        "--only-reference-fpr",
+        action="store_true",
+        help="Only plot rows matching --reference-fpr; useful after a focused rerun.",
+    )
     return parser
 
 
@@ -594,6 +796,14 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     rows = load_run_rows(args.results_dir)
+    if args.only_reference_fpr:
+        rows = [
+            row for row in rows
+            if math.isclose(row.target_fpr, args.reference_fpr, rel_tol=1e-12, abs_tol=0.0)
+        ]
+        if not rows:
+            raise ValueError(f"No rows matched --reference-fpr {args.reference_fpr:g}")
+
     cross_k_summary = summarize_cross_k(rows, args.reference_fpr)
     fpr_summary = summarize_fpr_sweep(rows)
 
@@ -603,8 +813,7 @@ def main() -> None:
     _write_csv(fpr_csv, fpr_summary)
 
     outputs = [
-        write_performance_svg(cross_k_summary, output_dir, args.reference_fpr),
-        write_fpr_memory_svg(cross_k_summary, fpr_summary, output_dir, args.reference_fpr),
+        *write_matplotlib_plots(cross_k_summary, fpr_summary, output_dir, args.reference_fpr),
         cross_k_csv,
         fpr_csv,
     ]

@@ -73,6 +73,28 @@ def build_parser() -> argparse.ArgumentParser:
         default="bloom,cuckoo,xor,learned",
         help="Comma-separated filter families to run.",
     )
+    parser.add_argument(
+        "--learned-backend",
+        default="ngram_sgd",
+        choices=[
+            "composition_logistic",
+            "dna_ngram_sgd",
+            "ngram_nb",
+            "ngram_sgd",
+            "prefix_set",
+            "position_logistic",
+        ],
+        help="Learned-filter classifier backend.",
+    )
+    parser.add_argument("--learned-ngram-features", type=int, default=4096)
+    parser.add_argument("--learned-ngram-min", type=int, default=3)
+    parser.add_argument("--learned-ngram-max", type=int, default=5)
+    parser.add_argument(
+        "--learned-prefilter-fpr",
+        type=float,
+        default=None,
+        help="Optional front Bloom filter FPR for sandwich learned-filter variants.",
+    )
     return parser
 
 
@@ -140,10 +162,16 @@ def main() -> None:
                     params = {
                         "backup_false_positive_rate": fpr,
                         "model_threshold": 0.5,
-                        "model_backend": "ngram_sgd",
-                        "ngram_features": 4096,
-                        "ngram_range": (3, 5),
+                        "model_backend": args.learned_backend,
+                        "ngram_features": args.learned_ngram_features,
+                        "ngram_range": (args.learned_ngram_min, args.learned_ngram_max),
                     }
+                    if args.learned_prefilter_fpr is not None:
+                        params["prefilter_false_positive_rate"] = args.learned_prefilter_fpr
+                    if args.learned_backend == "prefix_set":
+                        prefix_len = min(k, args.learned_ngram_min)
+                        params["ngram_range"] = (prefix_len, prefix_len)
+                        params["refit_model_on_full_dataset"] = True
 
                 cfg = ExperimentConfig(
                     dataset_name=args.dataset_name,

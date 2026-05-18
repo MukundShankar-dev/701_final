@@ -1,17 +1,17 @@
 {
-  "avg_latency_us": 4.6128541507641785,
-  "build_time_seconds": 33.14968766699894,
+  "avg_latency_us": 3.6062208004295826,
+  "build_time_seconds": 31.21091962500941,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 276931.1685627768,
-    "repeated_qps": 288715.09138029104,
-    "sequential_qps": 278889.24442457827
+    "random_qps": 390490.24983123026,
+    "repeated_qps": 364861.4144846044,
+    "sequential_qps": 385439.3840217135
   },
   "dataset_name": "pseudomonas_aeruginosa_k21",
   "extra_stats": {
     "actual_memory_usage_bytes": 11165338,
     "bits_per_item": 14.377587609766227,
-    "build_time_seconds": 33.14732108300086,
+    "build_time_seconds": 31.210096958093345,
     "built": true,
     "filter_name": "bloom",
     "inserted_keys": 6212635,
@@ -24,7 +24,7 @@
     },
     "target_false_positive_rate": 0.001
   },
-  "false_positive_rate": 0.0011,
+  "false_positive_rate": 0.0008,
   "filter_params": {
     "expected_items": 6212635,
     "false_positive_rate": 0.001
@@ -34,10 +34,10 @@
   "k": 21,
   "memory_per_kmer_bytes": 1.7971984512207784,
   "memory_usage_bytes": 11165338,
-  "p50_latency_us": 4.6128541507641785,
-  "p95_latency_us": 4.6128541507641785,
-  "p99_latency_us": 4.6128541507641785,
+  "p50_latency_us": 3.6062208004295826,
+  "p95_latency_us": 3.6062208004295826,
+  "p99_latency_us": 3.6062208004295826,
   "run_id": "bloom_pseudomonas_aeruginosa_k21_k21_74052d8b08_run0",
-  "throughput_qps": 216785.52308755246,
+  "throughput_qps": 277298.60575394536,
   "true_positive_rate": 1.0
 }

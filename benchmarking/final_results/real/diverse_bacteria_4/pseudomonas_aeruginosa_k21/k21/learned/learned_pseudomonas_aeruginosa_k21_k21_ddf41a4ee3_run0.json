@@ -1,32 +1,33 @@
 {
-  "avg_latency_us": 23.260941699845716,
-  "build_time_seconds": 477.3410566250095,
+  "avg_latency_us": 17.468852101592347,
+  "build_time_seconds": 361.5569045409793,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 45204.97073103297,
-    "repeated_qps": 47713.89466646233,
-    "sequential_qps": 44783.538900797335
+    "random_qps": 61103.71642599497,
+    "repeated_qps": 66215.42057176432,
+    "sequential_qps": 60714.9589883633
   },
   "dataset_name": "pseudomonas_aeruginosa_k21",
   "extra_stats": {
-    "actual_memory_usage_bytes": 11181733,
-    "build_time_seconds": 474.8834073749895,
+    "actual_memory_usage_bytes": 11181731,
+    "build_time_seconds": 360.97274029103573,
     "built": true,
     "filter_name": "learned",
     "has_backup_filter": true,
+    "has_prefilter": false,
     "inserted_keys": 6212635,
     "model_eval": {
       "accuracy": 0.49980791827405446,
-      "avg_precision": 0.7310760074956633,
+      "avg_precision": 0.732000471413411,
       "false_positive_rate": 0.0,
-      "model_false_negative_count": 6212632.0,
-      "model_false_negative_rate": 0.999999517113109,
+      "model_false_negative_count": 6212631.0,
+      "model_false_negative_rate": 0.999999356150812,
       "model_fnr": 0.9999989273309634,
       "model_fpr": 0.0,
-      "roc_auc": 0.7469330017471747,
-      "selected_threshold": 0.9231056766847437,
+      "roc_auc": 0.7473326412926534,
+      "selected_threshold": 0.9212936950408483,
       "target_model_fpr": 0.001,
-      "threshold": 0.9231056766847437,
+      "threshold": 0.9212936950408483,
       "true_positive_rate": 1.0726690365501249e-06,
       "used_fallback_selection": 0.0
     },
@@ -34,16 +35,20 @@
       "backup_false_positive_rate": 0.001,
       "k": 21,
       "model_backend": "ngram_sgd",
-      "model_threshold": 0.9231056766847437,
+      "model_false_positive_rate": 0.001,
+      "model_threshold": 0.9212936950408483,
       "ngram_features": 4096,
       "ngram_range": [
         3,
         5
-      ]
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.001
     },
     "target_false_positive_rate": 0.001
   },
-  "false_positive_rate": 0.0009,
+  "false_positive_rate": 0.0013,
   "filter_params": {
     "backup_false_positive_rate": 0.001,
     "model_backend": "ngram_sgd",
@@ -57,12 +62,12 @@
   "filter_type": "learned",
   "inserted_keys": 6212635,
   "k": 21,
-  "memory_per_kmer_bytes": 1.7998374280800338,
-  "memory_usage_bytes": 11181733,
-  "p50_latency_us": 23.260941699845716,
-  "p95_latency_us": 23.260941699845716,
-  "p99_latency_us": 23.260941699845716,
+  "memory_per_kmer_bytes": 1.7998371061554397,
+  "memory_usage_bytes": 11181731,
+  "p50_latency_us": 17.468852101592347,
+  "p95_latency_us": 17.468852101592347,
+  "p99_latency_us": 17.468852101592347,
   "run_id": "learned_pseudomonas_aeruginosa_k21_k21_ddf41a4ee3_run0",
-  "throughput_qps": 42990.5208870642,
+  "throughput_qps": 57244.74591600936,
   "true_positive_rate": 1.0
 }

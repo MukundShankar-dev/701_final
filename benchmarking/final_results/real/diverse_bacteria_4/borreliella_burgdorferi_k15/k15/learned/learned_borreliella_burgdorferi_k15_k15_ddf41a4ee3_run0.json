@@ -1,32 +1,33 @@
 {
-  "avg_latency_us": 18.547329150896985,
-  "build_time_seconds": 74.63065837498289,
+  "avg_latency_us": 13.318160403287038,
+  "build_time_seconds": 55.61977624997962,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 56628.69554726112,
-    "repeated_qps": 57323.782359636796,
-    "sequential_qps": 55816.160174861405
+    "random_qps": 81134.34820525422,
+    "repeated_qps": 86883.86674902156,
+    "sequential_qps": 79833.39725547431
   },
   "dataset_name": "borreliella_burgdorferi_k15",
   "extra_stats": {
     "actual_memory_usage_bytes": 2335980,
-    "build_time_seconds": 74.23025758401491,
+    "build_time_seconds": 55.512194584007375,
     "built": true,
     "filter_name": "learned",
     "has_backup_filter": true,
+    "has_prefilter": false,
     "inserted_keys": 1290666,
     "model_eval": {
       "accuracy": 0.5007463842975206,
-      "avg_precision": 0.67246190399775,
+      "avg_precision": 0.6714458471015305,
       "false_positive_rate": 0.0,
       "model_false_negative_count": 1290664.0,
       "model_false_negative_rate": 0.9999984504124227,
       "model_fnr": 0.9999948270153948,
       "model_fpr": 0.0,
-      "roc_auc": 0.6865898677757986,
-      "selected_threshold": 0.8560786364802038,
+      "roc_auc": 0.686497898156335,
+      "selected_threshold": 0.8506131094604499,
       "target_model_fpr": 0.001,
-      "threshold": 0.8560786364802038,
+      "threshold": 0.8506131094604499,
       "true_positive_rate": 5.172984605197815e-06,
       "used_fallback_selection": 0.0
     },
@@ -34,16 +35,20 @@
       "backup_false_positive_rate": 0.001,
       "k": 15,
       "model_backend": "ngram_sgd",
-      "model_threshold": 0.8560786364802038,
+      "model_false_positive_rate": 0.001,
+      "model_threshold": 0.8506131094604499,
       "ngram_features": 4096,
       "ngram_range": [
         3,
         5
-      ]
+      ],
+      "prefilter_false_positive_rate": null,
+      "refit_model_on_full_dataset": false,
+      "total_false_positive_rate": 0.001
     },
     "target_false_positive_rate": 0.001
   },
-  "false_positive_rate": 0.0012,
+  "false_positive_rate": 0.001,
   "filter_params": {
     "backup_false_positive_rate": 0.001,
     "model_backend": "ngram_sgd",
@@ -59,10 +64,10 @@
   "k": 15,
   "memory_per_kmer_bytes": 1.809902794371278,
   "memory_usage_bytes": 2335980,
-  "p50_latency_us": 18.547329150896985,
-  "p95_latency_us": 18.547329150896985,
-  "p99_latency_us": 18.547329150896985,
+  "p50_latency_us": 13.318160403287038,
+  "p95_latency_us": 13.318160403287038,
+  "p99_latency_us": 13.318160403287038,
   "run_id": "learned_borreliella_burgdorferi_k15_k15_ddf41a4ee3_run0",
-  "throughput_qps": 53916.11869634815,
+  "throughput_qps": 75085.4449652965,
   "true_positive_rate": 1.0
 }

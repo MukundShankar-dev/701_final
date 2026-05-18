@@ -1,17 +1,17 @@
 {
-  "avg_latency_us": 2.8060798494455717,
-  "build_time_seconds": 1.348759749904275,
+  "avg_latency_us": 2.8719069164556763,
+  "build_time_seconds": 1.2936940420186147,
   "cache_proxy": {
     "batch_size": 5000,
-    "random_qps": 422250.2468019872,
-    "repeated_qps": 499174.283051748,
-    "sequential_qps": 414146.3109928137
+    "random_qps": 418704.9446164663,
+    "repeated_qps": 439349.6028315839,
+    "sequential_qps": 379982.9253217542
   },
   "dataset_name": "synth_k15",
   "extra_stats": {
     "actual_memory_usage_bytes": 479038,
     "bits_per_item": 9.585060777349808,
-    "build_time_seconds": 1.3486936669796705,
+    "build_time_seconds": 1.2936583750415593,
     "built": true,
     "filter_name": "bloom",
     "inserted_keys": 399820,
@@ -34,10 +34,10 @@
   "k": 15,
   "memory_per_kmer_bytes": 1.1981341603721676,
   "memory_usage_bytes": 479038,
-  "p50_latency_us": 2.7900499932002276,
-  "p95_latency_us": 2.7900499932002276,
-  "p99_latency_us": 2.7900499932002276,
+  "p50_latency_us": 2.8668583021499217,
+  "p95_latency_us": 2.8668583021499217,
+  "p99_latency_us": 2.8668583021499217,
   "run_id": "bloom_synth_k15_k15_a1651c20db_run2",
-  "throughput_qps": 356369.0463753485,
+  "throughput_qps": 348200.7004719136,
   "true_positive_rate": 1.0
 }

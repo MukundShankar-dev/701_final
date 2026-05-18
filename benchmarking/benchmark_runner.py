@@ -64,6 +64,26 @@ def _make_filter(config: ExperimentConfig) -> Any:
             model_backend=str(params.get("model_backend", "ngram_sgd")),
             ngram_features=int(params.get("ngram_features", 4096)),
             ngram_range=tuple(params.get("ngram_range", (3, 5))),
+            total_false_positive_rate=(
+                float(params["total_false_positive_rate"])
+                if "total_false_positive_rate" in params
+                else None
+            ),
+            model_false_positive_rate=(
+                float(params["model_false_positive_rate"])
+                if "model_false_positive_rate" in params
+                else None
+            ),
+            prefilter_false_positive_rate=(
+                float(params["prefilter_false_positive_rate"])
+                if "prefilter_false_positive_rate" in params
+                else None
+            ),
+            refit_model_on_full_dataset=(
+                bool(params["refit_model_on_full_dataset"])
+                if "refit_model_on_full_dataset" in params
+                else None
+            ),
         )
 
     raise ValueError(f"Unsupported filter type: {config.filter_type}")
@@ -108,6 +128,10 @@ def run_single_benchmark(config: ExperimentConfig, *, run_index: int = 0) -> Ben
         queries.negatives,
         repetitions=max(1, config.repetitions),
     )
+
+    reset_query_counters = getattr(filt, "reset_query_counters", None)
+    if callable(reset_query_counters):
+        reset_query_counters()
 
     pos_preds = filt.batch_contains(queries.positives)
     neg_preds = filt.batch_contains(queries.negatives)

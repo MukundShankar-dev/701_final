@@ -32,6 +32,10 @@ class LearnedFilter(AMQFilter):
         model_backend: str = "ngram_sgd",
         ngram_features: int = 4096,
         ngram_range: tuple[int, int] = (3, 5),
+        total_false_positive_rate: float | None = None,
+        model_false_positive_rate: float | None = None,
+        prefilter_false_positive_rate: float | None = None,
+        refit_model_on_full_dataset: bool | None = None,
     ) -> None:
         self.k = k
         self.model_threshold = model_threshold
@@ -40,6 +44,24 @@ class LearnedFilter(AMQFilter):
         self.model_backend = model_backend
         self.ngram_features = ngram_features
         self.ngram_range = ngram_range
+        self.total_false_positive_rate = (
+            backup_false_positive_rate
+            if total_false_positive_rate is None
+            else total_false_positive_rate
+        )
+        if model_false_positive_rate is None:
+            if total_false_positive_rate is None:
+                model_false_positive_rate = backup_false_positive_rate
+            else:
+                remaining = self.total_false_positive_rate - self.backup_false_positive_rate
+                model_false_positive_rate = max(0.0, remaining / max(1e-12, 1.0 - self.backup_false_positive_rate))
+        self.model_false_positive_rate = model_false_positive_rate
+        self.prefilter_false_positive_rate = prefilter_false_positive_rate
+        self.refit_model_on_full_dataset = (
+            model_backend == "prefix_set"
+            if refit_model_on_full_dataset is None
+            else refit_model_on_full_dataset
+        )
 
         self.model = KmerLogisticModel(
             k=k,
@@ -50,6 +72,7 @@ class LearnedFilter(AMQFilter):
             ngram_range=ngram_range,
         )
         self.backup_filter: BackupBloomFilter | None = None
+        self.prefilter: BackupBloomFilter | None = None
 
         self._inserted_count = 0
         self._build_time_seconds: float | None = None
@@ -82,21 +105,30 @@ class LearnedFilter(AMQFilter):
         tuning = self.model.tune_threshold(
             positive_kmers=val_positive,
             negative_kmers=val_negative,
-            target_model_fpr=self.backup_false_positive_rate,
+            target_model_fpr=self.model_false_positive_rate,
         )
         self.model_threshold = self.model.threshold
 
         eval_metrics = self.model.evaluate(val_set.kmers, val_set.labels)
+        if self.refit_model_on_full_dataset:
+            self.model.fit(dataset.kmers, dataset.labels)
 
         positives = [k.upper() for k in positive_kmers]
         preds = self.model.predict(positives)
         model_false_negatives = [k for k, pred in zip(positives, preds, strict=True) if pred == 0]
+        model_false_negative_rate = len(model_false_negatives) / max(1, len(positives))
 
         self.backup_filter = BackupBloomFilter.build(
             model_false_negatives,
             false_positive_rate=self.backup_false_positive_rate,
             hash_seed=self.random_seed,
         )
+        if self.prefilter_false_positive_rate is not None:
+            self.prefilter = BackupBloomFilter.build(
+                positives,
+                false_positive_rate=self.prefilter_false_positive_rate,
+                hash_seed=self.random_seed + 10_003,
+            )
 
         self._inserted_count = len(positives)
         self._build_time_seconds = time.perf_counter() - start
@@ -104,7 +136,7 @@ class LearnedFilter(AMQFilter):
             **eval_metrics,
             **tuning,
             "model_false_negative_count": float(len(model_false_negatives)),
-            "model_false_negative_rate": float(len(model_false_negatives) / max(1, len(positives))),
+            "model_false_negative_rate": float(model_false_negative_rate),
         }
         self._built = True
         return dict(self._last_eval)
@@ -115,6 +147,9 @@ class LearnedFilter(AMQFilter):
 
     def contains(self, key: str) -> bool:
         """Query learned filter inference path."""
+        if self.prefilter is not None and not self.prefilter.contains(key):
+            return False
+
         pred = int(self.model.predict([key])[0])
         if pred == 1:
             return True
@@ -127,6 +162,21 @@ class LearnedFilter(AMQFilter):
         if not query_list:
             return []
 
+        if self.prefilter is not None:
+            prefilter_hits = [self.prefilter.contains(key) for key in query_list]
+            candidate_indices = [i for i, hit in enumerate(prefilter_hits) if hit]
+            if not candidate_indices:
+                return [False] * len(query_list)
+            candidate_keys = [query_list[i] for i in candidate_indices]
+            candidate_results = self._batch_contains_after_prefilter(candidate_keys)
+            out = [False] * len(query_list)
+            for idx, result in zip(candidate_indices, candidate_results, strict=True):
+                out[idx] = result
+            return out
+
+        return self._batch_contains_after_prefilter(query_list)
+
+    def _batch_contains_after_prefilter(self, query_list: Sequence[str]) -> list[bool]:
         preds = self.model.predict(query_list)
         out: list[bool] = []
         for key, pred in zip(query_list, preds, strict=True):
@@ -140,8 +190,9 @@ class LearnedFilter(AMQFilter):
 
     def memory_usage_bytes(self) -> int:
         backup_bytes = self.backup_filter.bloom.memory_usage_bytes() if self.backup_filter else 0
+        prefilter_bytes = self.prefilter.bloom.memory_usage_bytes() if self.prefilter else 0
         model_estimate = self.model.memory_usage_bytes()
-        return int(model_estimate + backup_bytes)
+        return int(model_estimate + backup_bytes + prefilter_bytes)
 
     def evaluate_heldout(self, dataset: LabeledKmerDataset) -> dict[str, float]:
         """Evaluate classifier-only metrics on held-out dataset."""
@@ -153,17 +204,24 @@ class LearnedFilter(AMQFilter):
 
         model_path = out_path.with_suffix(".model.pkl")
         backup_path = out_path.with_suffix(".backup.json")
+        prefilter_path = out_path.with_suffix(".prefilter.json")
         meta_path = out_path.with_suffix(".meta.json")
 
         self.model.save(model_path)
         if self.backup_filter is not None:
             self.backup_filter.save(backup_path)
+        if self.prefilter is not None:
+            self.prefilter.save(prefilter_path)
 
         payload: dict[str, Any] = {
             "filter_name": self.FILTER_NAME,
             "k": self.k,
             "model_threshold": self.model_threshold,
             "backup_false_positive_rate": self.backup_false_positive_rate,
+            "total_false_positive_rate": self.total_false_positive_rate,
+            "model_false_positive_rate": self.model_false_positive_rate,
+            "prefilter_false_positive_rate": self.prefilter_false_positive_rate,
+            "refit_model_on_full_dataset": self.refit_model_on_full_dataset,
             "random_seed": self.random_seed,
             "model_backend": self.model_backend,
             "ngram_features": self.ngram_features,
@@ -173,6 +231,7 @@ class LearnedFilter(AMQFilter):
             "last_eval": self._last_eval,
             "model_path": model_path.name,
             "backup_path": backup_path.name,
+            "prefilter_path": prefilter_path.name if self.prefilter is not None else None,
         }
         with meta_path.open("w", encoding="utf-8") as handle:
             json.dump(payload, handle, indent=2, sort_keys=True)
@@ -195,14 +254,39 @@ class LearnedFilter(AMQFilter):
             model_backend=str(payload.get("model_backend", "position_logistic")),
             ngram_features=int(payload.get("ngram_features", 4096)),
             ngram_range=tuple(payload.get("ngram_range", (3, 5))),
+            total_false_positive_rate=(
+                float(payload["total_false_positive_rate"])
+                if payload.get("total_false_positive_rate") is not None
+                else None
+            ),
+            model_false_positive_rate=(
+                float(payload["model_false_positive_rate"])
+                if payload.get("model_false_positive_rate") is not None
+                else None
+            ),
+            prefilter_false_positive_rate=(
+                float(payload["prefilter_false_positive_rate"])
+                if payload.get("prefilter_false_positive_rate") is not None
+                else None
+            ),
+            refit_model_on_full_dataset=(
+                bool(payload["refit_model_on_full_dataset"])
+                if payload.get("refit_model_on_full_dataset") is not None
+                else None
+            ),
         )
 
         model_path = meta_path.parent / payload["model_path"]
         backup_path = meta_path.parent / payload["backup_path"]
+        raw_prefilter_path = payload.get("prefilter_path")
 
         inst.model = KmerLogisticModel.load(model_path)
         if backup_path.exists():
             inst.backup_filter = BackupBloomFilter.load(backup_path)
+        if raw_prefilter_path is not None:
+            prefilter_path = meta_path.parent / str(raw_prefilter_path)
+            if prefilter_path.exists():
+                inst.prefilter = BackupBloomFilter.load(prefilter_path)
 
         inst._inserted_count = int(payload.get("inserted_count", 0))
         inst._build_time_seconds = payload.get("build_time_seconds")
@@ -217,12 +301,16 @@ class LearnedFilter(AMQFilter):
                 "k": self.k,
                 "model_threshold": self.model_threshold,
                 "backup_false_positive_rate": self.backup_false_positive_rate,
+                "total_false_positive_rate": self.total_false_positive_rate,
+                "model_false_positive_rate": self.model_false_positive_rate,
+                "prefilter_false_positive_rate": self.prefilter_false_positive_rate,
+                "refit_model_on_full_dataset": self.refit_model_on_full_dataset,
                 "model_backend": self.model_backend,
                 "ngram_features": self.ngram_features,
                 "ngram_range": self.ngram_range,
             },
             inserted_keys=self._inserted_count,
-            target_false_positive_rate=self.backup_false_positive_rate,
+            target_false_positive_rate=self.total_false_positive_rate,
             actual_memory_usage_bytes=self.memory_usage_bytes(),
             build_time_seconds=self._build_time_seconds,
         )
@@ -231,5 +319,6 @@ class LearnedFilter(AMQFilter):
             "built": self._built,
             "model_eval": self._last_eval,
             "has_backup_filter": self.backup_filter is not None,
+            "has_prefilter": self.prefilter is not None,
         })
         return out
